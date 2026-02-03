@@ -49,7 +49,7 @@
     .rankList{ border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; }
     .rankRow{
       display:grid;
-      grid-template-columns: 44px 1fr 80px;
+      grid-template-columns: 44px 1fr 92px;
       gap:10px;
       padding:12px;
       border-bottom:1px solid var(--line);
@@ -80,7 +80,7 @@
     .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
     .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
 
-    /* ✅ 인증 업로드 모달(같은 페이지 안에서 iframe) */
+    /* ✅ 인증 모달(iframe) */
     .modalMask{
       position:fixed; inset:0; background:rgba(0,0,0,0.35);
       display:none; align-items:flex-end; justify-content:center;
@@ -125,6 +125,7 @@
         <input id="name" class="input grow" autocomplete="off" placeholder="이름 입력"/>
         <button id="lookupBtn" class="btn small" type="button">입력</button>
       </div>
+      <div class="hint" style="margin-top:6px;">* 이름 입력 후 [입력]을 눌러 팀을 확인하세요.</div>
     </div>
 
     <div class="fieldGroup">
@@ -138,15 +139,11 @@
         <input id="distance" class="input unitPad" inputmode="decimal" placeholder="숫자만 입력"/>
         <div class="unit">km</div>
       </div>
+      <div class="hint" style="margin-top:6px;">* 인증(사진 업로드) 성공 시에만 기록이 저장됩니다.</div>
     </div>
 
     <div class="fieldGroup">
-      <button id="submitBtn" class="btn" type="button">입력 완료</button>
-    </div>
-
-    <div class="fieldGroup">
-      <button id="proofBtn" class="btn secondary" type="button">인증 사진 업로드</button>
-      <div class="hint" style="margin-top:8px;">* 같은 페이지 안에서 업로드 창이 열립니다.</div>
+      <button id="certBtn" class="btn" type="button">인증</button>
     </div>
 
     <div id="status" class="status"></div>
@@ -189,7 +186,7 @@
 
   <div class="links">
     <a href="./admin.html">DB(관리자)</a>
-    <span class="hint">모바일 최적화 v3</span>
+    <span class="hint">모바일 최적화 최종</span>
   </div>
 </div>
 
@@ -202,11 +199,11 @@
   </div>
 </div>
 
-<!-- ✅ 인증 업로드 모달(iframe) -->
+<!-- ✅ 인증 모달(iframe) -->
 <div class="modalMask" id="modalMask">
   <div class="modal">
     <div class="modalTop">
-      <div>인증 사진 업로드</div>
+      <div>인증 (사진 업로드)</div>
       <button class="closeBtn" id="closeModal">닫기</button>
     </div>
     <iframe id="proofFrame" title="proof uploader"></iframe>
@@ -214,6 +211,7 @@
 </div>
 
 <script>
+  // 너의 웹앱 URL
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
 
   function setStatus(msg, ok=true){
@@ -233,11 +231,12 @@
     return x.toLocaleString("ko-KR", {maximumFractionDigits:2}) + " km";
   }
 
-  // JSONP
+  // JSONP 호출
   function apiJsonp(params){
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
       params.callback = cb;
+
       const url = new URL(SCRIPT_URL);
       Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
 
@@ -270,9 +269,16 @@
 
   // ✅ 인증 모달(iframe)
   function openProofModal(){
-    const name = encodeURIComponent(document.getElementById("name").value.trim());
-    const dist = encodeURIComponent(document.getElementById("distance").value.trim());
-    const url = `${SCRIPT_URL}?page=proof&name=${name}&distance=${dist}`;
+    const name = document.getElementById("name").value.trim();
+    const team = document.getElementById("team").value.trim();
+    const distRaw = document.getElementById("distance").value.trim();
+    const km = parseKm(distRaw);
+
+    if(!name) return showPopup("확인", "이름을 입력하세요.");
+    if(!team) return showPopup("확인", "[입력] 버튼으로 팀을 먼저 확인하세요.");
+    if(!Number.isFinite(km) || km <= 0) return showPopup("확인", "거리(km)를 0보다 큰 숫자로 입력하세요.");
+
+    const url = `${SCRIPT_URL}?page=proof&name=${encodeURIComponent(name)}&distance=${encodeURIComponent(distRaw)}`;
     document.getElementById("proofFrame").src = url;
     document.getElementById("modalMask").style.display = "flex";
   }
@@ -280,21 +286,31 @@
     document.getElementById("modalMask").style.display = "none";
     document.getElementById("proofFrame").src = "about:blank";
   }
-  document.getElementById("proofBtn").addEventListener("click", openProofModal);
+  document.getElementById("certBtn").addEventListener("click", openProofModal);
   document.getElementById("closeModal").addEventListener("click", closeProofModal);
   document.getElementById("modalMask").addEventListener("click", (e)=>{
     if(e.target.id === "modalMask") closeProofModal();
   });
 
-  // ✅ iframe에서 “업로드 완료” 신호 받기
+  // ✅ iframe에서 업로드+저장 완료 신호 받기
   window.addEventListener("message", async (ev) => {
     const d = ev.data || {};
     if(d.type === "proofUploaded" && d.ok){
       closeProofModal();
-      showPopup("완료되었습니다", "인증 사진이 업로드되었습니다.");
-      // 업로드 후 랭킹 갱신(선택)
-      await refreshLeaderboard();
-      await refreshMyTotal();
+
+      // 업로드 결과는 Apps Script uploadProof_가 리턴한 값 기준
+      // (fileUrl 포함)
+      const name = document.getElementById("name").value.trim();
+      const team = document.getElementById("team").value.trim();
+      const km = document.getElementById("distance").value.trim();
+
+      showPopup("완료되었습니다", `${name} / ${team}팀 / ${km}km\n인증 및 기록 저장 완료`);
+
+      // 저장 후 랭킹/누계 갱신
+      await Promise.all([refreshLeaderboard(), refreshMyTotal()]);
+
+      // 다음 입력 편의: 거리 칸 비우기
+      document.getElementById("distance").value = "";
     }
   });
 
@@ -362,7 +378,7 @@
 
     try{
       const out = await apiJsonp({ action:"lookupTeam", name });
-      if(!out.ok) return setStatus("DB에 없는 이름입니다. (DB 시트 확인)", false);
+      if(!out.ok) return showPopup("확인", "DB에 없는 이름입니다. (DB 시트 확인)");
 
       document.getElementById("team").value = out.team;
       setStatus(`팀 확인: ${name} → ${out.team}`, true);
@@ -370,47 +386,21 @@
       await refreshMyTotal();
       document.getElementById("distance").focus();
     }catch(e){
-      setStatus("DB 연결 실패(웹앱/배포).", false);
-    }
-  }
-
-  async function submit(){
-    const name = document.getElementById("name").value.trim();
-    const team = document.getElementById("team").value.trim();
-    const km = parseKm(document.getElementById("distance").value);
-
-    if(!name) return setStatus("이름을 입력하세요.", false);
-    if(!team) return setStatus("[입력] 버튼을 눌러 팀을 먼저 확인하세요.", false);
-    if(!Number.isFinite(km) || km <= 0) return setStatus("거리(km)는 0보다 큰 숫자여야 합니다.", false);
-
-    try{
-      const out = await apiJsonp({ action:"add", name, distance: km });
-      if(!out.ok) return setStatus("저장 실패: " + (out.error || ""), false);
-
-      document.getElementById("team").value = out.team;
-      document.getElementById("distance").value = "";
-
-      // ✅ “작은 글씨” 말고 팝업
-      showPopup("완료되었습니다", `${out.date}\n${name} / ${out.team}팀 / ${km}km 저장`);
-
-      // 누계/랭킹 갱신
-      await Promise.all([refreshLeaderboard(), refreshMyTotal()]);
-    }catch(e){
-      setStatus("저장 실패(웹앱/배포).", false);
+      showPopup("오류", "DB 연결 실패(웹앱/배포).");
     }
   }
 
   document.getElementById("lookupBtn").addEventListener("click", lookupTeam);
-  document.getElementById("submitBtn").addEventListener("click", submit);
 
+  // Enter UX: 이름칸 Enter -> 팀확인, 거리칸 Enter -> 인증 모달
   document.addEventListener("keydown", (e)=>{
     if(e.key !== "Enter") return;
     const id = document.activeElement?.id;
     if(id === "name") lookupTeam();
-    else if(id === "distance") submit();
+    else if(id === "distance") openProofModal();
   });
 
-  // 초기 로드
+  // 초기 랭킹 로드
   refreshLeaderboard();
 </script>
 </body>
