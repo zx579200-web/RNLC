@@ -8,28 +8,35 @@
     :root{ --b:#111; --muted:#666; --line:#eee; --radius:16px; }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#fff; color:#111; }
-    .wrap{ width:min(900px, 92vw); margin:0 auto; padding:18px 0 44px; }
+    .wrap{ width:min(980px, 92vw); margin:0 auto; padding:18px 0 44px; }
     h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:28px; }
     .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; padding:14px; }
     .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .input{ height:48px; border:2px solid var(--b); border-radius:12px; padding:10px 12px; font-size:15px; outline:none; }
     .btn{ height:48px; border:2px solid var(--b); border-radius:12px; background:#fff; font-size:15px; font-weight:900; cursor:pointer; padding:0 14px; }
+    .btn.danger{ border-color:#c00; color:#c00; }
+    .btn.mini{ height:36px; font-size:13px; padding:0 10px; border-radius:10px; }
     .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
     .section{ margin-top:14px; }
     h2{ margin:12px 0 10px; font-size:16px; font-weight:900; }
 
     table{ width:100%; border-collapse:collapse; font-size:13px; }
-    th, td{ border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; }
+    th, td{ border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; vertical-align:middle; }
     th{ font-weight:900; background:#fafafa; }
     .mono{ font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
     .right{ text-align:right; }
     .pill{ display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
+    .actions{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
 
     .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.25); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
-    .toast{ width:min(420px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
+    .toast{ width:min(440px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
     .toastTitle{ font-size:18px; font-weight:1000; margin:4px 0 8px; }
     .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
     .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
+
+    @media (max-width: 720px){
+      th:nth-child(6), td:nth-child(6), th:nth-child(7), td:nth-child(7){ display:none; } /* note/count 일부 숨김 */
+    }
   </style>
 </head>
 
@@ -65,10 +72,17 @@
   </div>
 
   <div class="section card">
-    <h2>기록(entries)</h2>
-    <div class="hint" style="margin-bottom:8px;">
-      * 200km 초과(counted=false)는 누계/랭킹 집계 제외
+    <div class="row" style="justify-content:space-between; align-items:baseline;">
+      <h2 style="margin:0;">기록(entries)</h2>
+      <div class="hint">* [수정]은 거리만 변경 / [삭제]는 행 삭제</div>
     </div>
+
+    <div class="row" style="margin:10px 0 8px;">
+      <input id="filterName" class="input" style="width:200px" placeholder="이름 필터(선택)"/>
+      <button class="btn" id="btnFilter" style="height:48px;">필터 적용</button>
+      <button class="btn" id="btnClear" style="height:48px;">필터 해제</button>
+    </div>
+
     <div style="overflow:auto;">
       <table>
         <thead>
@@ -80,10 +94,11 @@
             <th class="right">km</th>
             <th>counted</th>
             <th>note</th>
+            <th class="right">관리</th>
           </tr>
         </thead>
         <tbody id="entriesBody">
-          <tr><td colspan="7" class="hint">불러오기 전</td></tr>
+          <tr><td colspan="8" class="hint">불러오기 전</td></tr>
         </tbody>
       </table>
     </div>
@@ -100,6 +115,7 @@
 
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
+  let allEntries = [];
 
   function showPopup(title, body){
     document.getElementById("toastTitle").textContent = title || "안내";
@@ -110,7 +126,6 @@
   document.getElementById("toastBtn").addEventListener("click", hidePopup);
   document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
 
-  // JSONP
   function apiJsonp(params){
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
@@ -132,15 +147,15 @@
     });
   }
 
-  function passValue(){
-    return document.getElementById("pass").value.trim();
-  }
+  function passValue(){ return document.getElementById("pass").value.trim(); }
 
   function renderRoster(roster){
     const teams = ["R","N","L","C"];
     const html = teams.map(t=>{
       const list = (roster[t] || []).map(n=>`<span class="pill">${n}</span>`).join(" ");
-      return `<div style="margin:8px 0;"><b>${t}팀</b> (${(roster[t]||[]).length}명)<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${list || "<span class='hint'>-</span>"}</div></div>`;
+      return `<div style="margin:8px 0;"><b>${t}팀</b> (${(roster[t]||[]).length}명)
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${list || "<span class='hint'>-</span>"}</div>
+      </div>`;
     }).join("");
     document.getElementById("rosterBox").innerHTML = html;
   }
@@ -148,13 +163,12 @@
   function renderEntries(rows){
     const body = document.getElementById("entriesBody");
     if(!rows || !rows.length){
-      body.innerHTML = `<tr><td colspan="7" class="hint">데이터 없음</td></tr>`;
+      body.innerHTML = `<tr><td colspan="8" class="hint">데이터 없음</td></tr>`;
       return;
     }
-    // 최신이 위로
     rows.sort((a,b)=> (b.ts||0) - (a.ts||0));
 
-    body.innerHTML = rows.slice(0, 300).map(r=>`
+    body.innerHTML = rows.slice(0, 400).map(r=>`
       <tr>
         <td class="mono">${r.ts||""}</td>
         <td>${r.date||""}</td>
@@ -163,8 +177,20 @@
         <td class="right mono">${(r.distance||0).toString()}</td>
         <td>${String(r.counted)}</td>
         <td class="mono">${r.note||""}</td>
+        <td class="right">
+          <div class="actions">
+            <button class="btn mini" onclick="editEntry(${r.ts}, ${r.distance})">수정</button>
+            <button class="btn mini danger" onclick="deleteEntry(${r.ts})">삭제</button>
+          </div>
+        </td>
       </tr>
     `).join("");
+  }
+
+  function applyFilter(){
+    const q = document.getElementById("filterName").value.trim();
+    if(!q) return renderEntries(allEntries);
+    renderEntries(allEntries.filter(x => String(x.name||'').includes(q)));
   }
 
   async function loadAll(){
@@ -180,7 +206,9 @@
     if(!entries.ok) return showPopup("오류", entries.error || "entries 실패");
 
     renderRoster(roster.roster);
-    renderEntries(entries.rows);
+    allEntries = entries.rows || [];
+    applyFilter();
+
     showPopup("완료", "관리자 데이터 불러오기 완료");
   }
 
@@ -198,8 +226,51 @@
     await loadAll();
   }
 
+  // ✅ 수정: distance만 변경
+  async function editEntry(ts, oldDistance){
+    const pass = passValue();
+    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
+
+    const v = prompt("새 거리(km)를 입력하세요.", String(oldDistance));
+    if(v === null) return;
+    const n = Number(String(v).trim().replace(",", "."));
+    if(!Number.isFinite(n) || n <= 0) return showPopup("확인", "거리 값이 올바르지 않습니다.");
+
+    const out = await apiJsonp({ action:"editEntry", pass, ts: String(ts), distance: String(n) });
+    if(!out.ok) return showPopup("오류", out.error || "수정 실패");
+
+    const extra = (out.counted === false) ? "\n※ 200km 초과로 집계 제외" : "";
+    showPopup("완료", `수정되었습니다.\nTS: ${ts}\n거리: ${n}km${extra}`);
+
+    await loadAll();
+  }
+
+  // ✅ 삭제
+  async function deleteEntry(ts){
+    const pass = passValue();
+    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
+
+    const ok = confirm(`정말 삭제할까요?\nTS: ${ts}\n(되돌릴 수 없습니다)`);
+    if(!ok) return;
+
+    const out = await apiJsonp({ action:"deleteEntry", pass, ts: String(ts) });
+    if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
+
+    showPopup("완료", `삭제되었습니다.\nTS: ${ts}`);
+    await loadAll();
+  }
+
+  // 전역 노출(인라인 onclick용)
+  window.editEntry = editEntry;
+  window.deleteEntry = deleteEntry;
+
   document.getElementById("btnLoad").addEventListener("click", loadAll);
   document.getElementById("btnMove").addEventListener("click", move);
+  document.getElementById("btnFilter").addEventListener("click", applyFilter);
+  document.getElementById("btnClear").addEventListener("click", ()=>{
+    document.getElementById("filterName").value = "";
+    applyFilter();
+  });
 </script>
 </body>
 </html>
