@@ -1,150 +1,35 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>RNLC 2월 팀 대항전</title>
-  <style>
-    body{margin:0;font-family:system-ui,"Noto Sans KR",sans-serif;background:#fff;color:#111}
-    .wrap{width:min(1100px,92vw);margin:0 auto;padding:44px 0 60px}
-    h1{text-align:center;font-weight:600;margin:18px 0 54px;font-size:44px}
-    .grid{display:grid;grid-template-columns:220px 1fr 220px;gap:18px 24px;align-items:center}
-    .label{text-align:right;font-size:38px;padding-right:18px;white-space:nowrap}
-    .field{width:100%;height:78px;border:6px solid #111;border-radius:4px;font-size:32px;padding:10px 16px;outline:none}
-    .smallBtn{font-size:26px;padding:10px 18px;border:3px solid #111;border-radius:10px;background:transparent;cursor:pointer}
-    .inputWithUnit{position:relative}
-    .field.hasUnit{padding-right:76px}
-    .unit{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:26px}
-    .actions{display:flex;justify-content:flex-end;gap:12px;margin-top:40px}
-    .btn{font-size:30px;padding:12px 22px;border:3px solid #111;border-radius:12px;background:transparent;cursor:pointer}
-    .status{margin-top:10px;text-align:right;font-size:14px;color:#666;min-height:18px}
-    .linkRow{display:flex;justify-content:flex-end;margin-top:10px}
-    a{color:#111}
-    @media (max-width:920px){
-      h1{font-size:34px}
-      .grid{grid-template-columns:140px 1fr}
-      .label{font-size:24px}
-      .field{height:62px;font-size:22px;border-width:4px}
-      .actions .btn,.smallBtn{font-size:20px}
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
+
+function apiJsonp(params){
+  return new Promise((resolve, reject) => {
+    const cb = "cb_" + Math.random().toString(36).slice(2);
+    params.callback = cb;
+
+    const url = new URL(SCRIPT_URL);
+    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+
+    window[cb] = (data) => { cleanup(); resolve(data); };
+
+    const script = document.createElement("script");
+    script.src = url.toString();
+    script.onerror = () => { cleanup(); reject(new Error("JSONP load error")); };
+    document.body.appendChild(script);
+
+    function cleanup(){
+      delete window[cb];
+      script.remove();
     }
-  </style>
-</head>
-<body>
-<div class="wrap">
-  <h1>RNLC 2월 팀 대항전</h1>
-
-  <div class="grid">
-    <div class="label">이름</div>
-    <input id="name" class="field" autocomplete="off"/>
-    <button id="assignBtn" class="smallBtn" type="button">입력</button>
-
-    <div class="label">팀</div>
-    <input id="team" class="field" readonly/>
-    <div></div>
-
-    <div class="label">거리입력</div>
-    <div class="inputWithUnit">
-      <input id="distance" class="field hasUnit" inputmode="decimal"/>
-      <div class="unit">km</div>
-    </div>
-    <div></div>
-  </div>
-
-  <div class="actions">
-    <button id="submitBtn" class="btn" type="button">입력 완료</button>
-  </div>
-  <div id="status" class="status"></div>
-
-  <div class="linkRow">
-    <a href="./admin.html">DB(관리자)</a>
-  </div>
-</div>
-
-<script>
-const https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec = "여기에_AppsScript_웹앱_URL_붙여넣기"; // ★필수 변경
-
-let pendingTeam = "";
-let lastAssigned = ""; // 동률일 때 번갈이용
-
-function setStatus(msg, ok=true){
-  const el = document.getElementById("status");
-  el.textContent = msg || "";
-  el.style.color = ok ? "#0a7" : "#c00";
-  if(msg) setTimeout(()=>{el.textContent="";}, 2200);
+  });
 }
 
-function parseKm(v){
-  const n = Number(String(v).trim().replace(",", "."));
-  return Number.isFinite(n) ? n : NaN;
+// 이름→팀 표시
+async function lookupTeam(name){
+  const out = await apiJsonp({action:"lookupTeam", name});
+  return out; // {ok, team} or {ok:false,error}
 }
 
-async function api(params){
-  const url = new URL(SCRIPT_URL);
-  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k, v));
-  const res = await fetch(url.toString(), { method: "GET" });
-  return await res.json();
+// 저장
+async function addEntry(name, distance){
+  const out = await apiJsonp({action:"add", name, distance});
+  return out; // {ok, date, team, ...} or error
 }
-
-function pickTeamByTotals(teamTotals){
-  const teams = ["R","N","L","C"];
-  let min = Infinity;
-  teams.forEach(t=>{ min = Math.min(min, Number(teamTotals[t]||0)); });
-  const candidates = teams.filter(t => Number(teamTotals[t]||0) === min);
-
-  // 동률이면 최근 배정 팀 피해서 선택
-  if(candidates.length > 1 && lastAssigned){
-    const alt = candidates.find(t => t !== lastAssigned);
-    if(alt) return alt;
-  }
-  // 그래도 여러개면 랜덤
-  return candidates[Math.floor(Math.random()*candidates.length)];
-}
-
-async function handleAssign(){
-  const name = document.getElementById("name").value.trim();
-  if(!name) return setStatus("이름을 먼저 입력하세요.", false);
-
-  const sum = await api({action:"summary"});
-  if(!sum.ok) return setStatus("DB 연결 실패: " + (sum.error||""), false);
-
-  pendingTeam = pickTeamByTotals(sum.teamTotals);
-  lastAssigned = pendingTeam;
-
-  document.getElementById("team").value = pendingTeam;
-  setStatus(`팀 배정됨: ${name} → ${pendingTeam}`, true);
-  document.getElementById("distance").focus();
-}
-
-async function handleSubmit(){
-  const name = document.getElementById("name").value.trim();
-  const km = parseKm(document.getElementById("distance").value);
-
-  if(!name) return setStatus("이름을 입력하세요.", false);
-  if(!pendingTeam) return setStatus("이름 옆 [입력]을 눌러 팀을 먼저 배정하세요.", false);
-  if(!Number.isFinite(km) || km <= 0) return setStatus("거리(km)는 0보다 큰 숫자여야 합니다.", false);
-
-  const out = await api({action:"add", name, team: pendingTeam, distance: km});
-  if(!out.ok) return setStatus("저장 실패: " + (out.error||""), false);
-
-  setStatus(`저장 완료: ${name} / ${out.date} / ${km} km`, true);
-
-  // 다음 입력을 위해 정리
-  document.getElementById("distance").value = "";
-  document.getElementById("team").value = "";
-  pendingTeam = "";
-  document.getElementById("name").focus();
-}
-
-document.getElementById("assignBtn").addEventListener("click", handleAssign);
-document.getElementById("submitBtn").addEventListener("click", handleSubmit);
-
-// Enter UX
-document.addEventListener("keydown", (e)=>{
-  if(e.key !== "Enter") return;
-  const active = document.activeElement;
-  if(active.id === "name") handleAssign();
-  else if(active.id === "distance") handleSubmit();
-});
-</script>
-</body>
-</html>
