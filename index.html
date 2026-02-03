@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>RNLC 2월 팀 대항전</title>
   <style>
-    :root{
-      --b:#111; --muted:#666; --card:#fcfcfc; --line:#eee;
-      --radius:16px;
-    }
+    :root{ --b:#111; --muted:#666; --card:#fcfcfc; --line:#eee; --radius:16px; }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#fff; color:#111; }
     .wrap{ width:min(760px, 92vw); margin:0 auto; padding:18px 0 44px; }
@@ -17,17 +14,10 @@
     .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; padding:14px; }
     .fieldGroup{ margin:12px 0; }
     .label{ display:block; font-size:14px; margin:0 0 8px; font-weight:900; }
-    .input{
-      width:100%; height:56px; border:3px solid var(--b); border-radius:14px;
-      padding:10px 14px; font-size:18px; outline:none;
-    }
+    .input{ width:100%; height:56px; border:3px solid var(--b); border-radius:14px; padding:10px 14px; font-size:18px; outline:none; }
     .row{ display:flex; gap:10px; align-items:center; }
     .grow{ flex:1; }
-    .btn{
-      width:100%; height:56px; border:2px solid var(--b); border-radius:14px;
-      background:#fff; font-size:18px; font-weight:900; cursor:pointer;
-    }
-    .btn.secondary{ border-color:#ccc; color:#333; }
+    .btn{ width:100%; height:56px; border:2px solid var(--b); border-radius:14px; background:#fff; font-size:18px; font-weight:900; cursor:pointer; }
     .btn.small{ width:120px; font-size:16px; height:56px; }
 
     .unitWrap{ position:relative; }
@@ -47,15 +37,7 @@
     .mono{ font-variant-numeric: tabular-nums; font-family: ui-monospace, Menlo, Consolas, monospace; }
 
     .rankList{ border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; }
-    .rankRow{
-      display:grid;
-      grid-template-columns: 44px 1fr 92px;
-      gap:10px;
-      padding:12px;
-      border-bottom:1px solid var(--line);
-      align-items:center;
-      font-size:14px;
-    }
+    .rankRow{ display:grid; grid-template-columns:44px 1fr 92px; gap:10px; padding:12px; border-bottom:1px solid var(--line); align-items:center; font-size:14px; }
     .rankRow:last-child{ border-bottom:none; }
     .pill{ display:inline-block; border:1px solid #ddd; border-radius:999px; padding:3px 8px; font-size:12px; margin-left:8px; color:#333; }
     .right{ text-align:right; }
@@ -63,44 +45,18 @@
     .links{ margin-top:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:13px; }
     a{ color:#111; }
 
-    /* ✅ 팝업(완료되었습니다) */
-    .toastMask{
-      position:fixed; inset:0; background:rgba(0,0,0,0.25);
-      display:none; align-items:center; justify-content:center; padding:18px;
-      z-index:9999;
-    }
-    .toast{
-      width:min(420px, 92vw);
-      background:#fff; border:1px solid var(--line); border-radius:18px;
-      padding:16px 16px 14px;
-      box-shadow:0 12px 30px rgba(0,0,0,0.12);
-      text-align:center;
-    }
+    /* popup */
+    .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.25); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
+    .toast{ width:min(420px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
     .toastTitle{ font-size:18px; font-weight:1000; margin:4px 0 8px; }
     .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
     .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
 
-    /* ✅ 인증 모달(iframe) */
-    .modalMask{
-      position:fixed; inset:0; background:rgba(0,0,0,0.35);
-      display:none; align-items:flex-end; justify-content:center;
-      z-index:9998;
-    }
-    .modal{
-      width:min(760px, 100vw);
-      height:min(82vh, 720px);
-      background:#fff; border-radius:18px 18px 0 0;
-      overflow:hidden; border:1px solid var(--line);
-    }
-    .modalTop{
-      display:flex; justify-content:space-between; align-items:center;
-      padding:10px 12px; border-bottom:1px solid var(--line);
-      font-weight:900;
-    }
-    .closeBtn{
-      border:1px solid #ddd; background:#fff; border-radius:12px;
-      padding:8px 10px; font-weight:900; cursor:pointer;
-    }
+    /* modal */
+    .modalMask{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:flex-end; justify-content:center; z-index:9998; }
+    .modal{ width:min(760px, 100vw); height:min(82vh, 720px); background:#fff; border-radius:18px 18px 0 0; overflow:hidden; border:1px solid var(--line); }
+    .modalTop{ display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid var(--line); font-weight:900; }
+    .closeBtn{ border:1px solid #ddd; background:#fff; border-radius:12px; padding:8px 10px; font-weight:900; cursor:pointer; }
     .modal iframe{ width:100%; height:calc(100% - 48px); border:0; }
 
     @media (min-width: 900px){
@@ -117,7 +73,6 @@
 <div class="wrap">
   <h1>RNLC 2월 팀 대항전</h1>
 
-  <!-- 입력 카드 -->
   <div class="card">
     <div class="fieldGroup">
       <label class="label">이름</label>
@@ -125,7 +80,7 @@
         <input id="name" class="input grow" autocomplete="off" placeholder="이름 입력"/>
         <button id="lookupBtn" class="btn small" type="button">입력</button>
       </div>
-      <div class="hint" style="margin-top:6px;">* 이름 입력 후 [입력]을 눌러 팀을 확인하세요.</div>
+      <div class="hint" style="margin-top:6px;">* 이름 입력 후 [입력] 버튼을 눌러 팀을 확인하세요.</div>
     </div>
 
     <div class="fieldGroup">
@@ -149,7 +104,6 @@
     <div id="status" class="status"></div>
   </div>
 
-  <!-- 누계/순위 -->
   <div class="section">
     <div class="sectionHead">
       <h2>누계 현황</h2>
@@ -186,11 +140,10 @@
 
   <div class="links">
     <a href="./admin.html">DB(관리자)</a>
-    <span class="hint">모바일 최적화 최종</span>
+    <span class="hint">PATCH</span>
   </div>
 </div>
 
-<!-- ✅ 완료 팝업 -->
 <div class="toastMask" id="toastMask">
   <div class="toast">
     <div class="toastTitle" id="toastTitle">완료되었습니다</div>
@@ -199,7 +152,6 @@
   </div>
 </div>
 
-<!-- ✅ 인증 모달(iframe) -->
 <div class="modalMask" id="modalMask">
   <div class="modal">
     <div class="modalTop">
@@ -211,41 +163,32 @@
 </div>
 
 <script>
-  // 너의 웹앱 URL
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
-
-  function setStatus(msg, ok=true){
-    const el = document.getElementById("status");
-    el.textContent = msg || "";
-    el.style.color = ok ? "#0a7" : "#c00";
-    if(msg) setTimeout(()=>{ el.textContent=""; }, 2200);
-  }
 
   function parseKm(v){
     const n = Number(String(v).trim().replace(",", "."));
     return Number.isFinite(n) ? n : NaN;
   }
-
   function fmtKm(n){
     const x = Math.round((Number(n) + Number.EPSILON) * 100) / 100;
     return x.toLocaleString("ko-KR", {maximumFractionDigits:2}) + " km";
   }
+  function escapeHtml(s){
+    return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
 
-  // JSONP 호출
+  // JSONP
   function apiJsonp(params){
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
       params.callback = cb;
-
       const url = new URL(SCRIPT_URL);
       Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-
       const script = document.createElement("script");
       window[cb] = (data) => { cleanup(); resolve(data); };
       script.onerror = () => { cleanup(); reject(new Error("JSONP load error")); };
       script.src = url.toString();
       document.body.appendChild(script);
-
       function cleanup(){
         try{ delete window[cb]; }catch(e){}
         script.remove();
@@ -253,21 +196,24 @@
     });
   }
 
-  // ✅ 팝업
+  // popup
   function showPopup(title, body){
     document.getElementById("toastTitle").textContent = title || "완료되었습니다";
     document.getElementById("toastBody").textContent = body || "";
     document.getElementById("toastMask").style.display = "flex";
   }
-  function hidePopup(){
-    document.getElementById("toastMask").style.display = "none";
-  }
+  function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
   document.getElementById("toastBtn").addEventListener("click", hidePopup);
-  document.getElementById("toastMask").addEventListener("click", (e)=>{
-    if(e.target.id === "toastMask") hidePopup();
-  });
+  document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
 
-  // ✅ 인증 모달(iframe)
+  // modal
+  function closeProofModal(){
+    document.getElementById("modalMask").style.display = "none";
+    document.getElementById("proofFrame").src = "about:blank";
+  }
+  document.getElementById("closeModal").addEventListener("click", closeProofModal);
+  document.getElementById("modalMask").addEventListener("click", (e)=>{ if(e.target.id==="modalMask") closeProofModal(); });
+
   function openProofModal(){
     const name = document.getElementById("name").value.trim();
     const team = document.getElementById("team").value.trim();
@@ -278,40 +224,36 @@
     if(!team) return showPopup("확인", "[입력] 버튼으로 팀을 먼저 확인하세요.");
     if(!Number.isFinite(km) || km <= 0) return showPopup("확인", "거리(km)를 0보다 큰 숫자로 입력하세요.");
 
-    const url = `${SCRIPT_URL}?page=proof&name=${encodeURIComponent(name)}&distance=${encodeURIComponent(distRaw)}`;
+    // ✅ cache 방지용 ts 파라미터
+    const url = `${SCRIPT_URL}?page=proof&name=${encodeURIComponent(name)}&distance=${encodeURIComponent(distRaw)}&t=${Date.now()}`;
     document.getElementById("proofFrame").src = url;
     document.getElementById("modalMask").style.display = "flex";
   }
-  function closeProofModal(){
-    document.getElementById("modalMask").style.display = "none";
-    document.getElementById("proofFrame").src = "about:blank";
-  }
   document.getElementById("certBtn").addEventListener("click", openProofModal);
-  document.getElementById("closeModal").addEventListener("click", closeProofModal);
-  document.getElementById("modalMask").addEventListener("click", (e)=>{
-    if(e.target.id === "modalMask") closeProofModal();
-  });
 
-  // ✅ iframe에서 업로드+저장 완료 신호 받기
+  // iframe -> 부모
   window.addEventListener("message", async (ev) => {
     const d = ev.data || {};
-    if(d.type === "proofUploaded" && d.ok){
-      closeProofModal();
+    if(d.type !== "proofUploaded") return;
 
-      // 업로드 결과는 Apps Script uploadProof_가 리턴한 값 기준
-      // (fileUrl 포함)
-      const name = document.getElementById("name").value.trim();
-      const team = document.getElementById("team").value.trim();
-      const km = document.getElementById("distance").value.trim();
-
-      showPopup("완료되었습니다", `${name} / ${team}팀 / ${km}km\n인증 및 기록 저장 완료`);
-
-      // 저장 후 랭킹/누계 갱신
-      await Promise.all([refreshLeaderboard(), refreshMyTotal()]);
-
-      // 다음 입력 편의: 거리 칸 비우기
-      document.getElementById("distance").value = "";
+    if(!d.ok){
+      showPopup("오류", "인증 업로드 실패");
+      return;
     }
+
+    closeProofModal();
+
+    const res = d.result || {};
+    const base = `${res.date || ""}\n${res.name || ""} / ${res.team || ""}팀 / ${res.distance || ""}km\n인증 및 기록 저장 완료`;
+    const msg = (res.counted === false)
+      ? base + `\n※ 200km 초과로 누계/랭킹 집계 제외`
+      : base;
+
+    showPopup("완료되었습니다", msg);
+
+    // 갱신
+    await Promise.all([refreshLeaderboard(), refreshMyTotal()]);
+    document.getElementById("distance").value = "";
   });
 
   async function refreshMyTotal(){
@@ -321,78 +263,57 @@
       document.getElementById("myTeam").textContent = "-";
       return;
     }
-    try{
-      const out = await apiJsonp({ action:"personTotal", name });
-      if(!out.ok) return;
-      document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
-      document.getElementById("myTeam").textContent = out.team || "-";
-    }catch(e){}
+    const out = await apiJsonp({ action:"personTotal", name });
+    if(!out.ok) return;
+    document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
+    document.getElementById("myTeam").textContent = out.team || "-";
   }
 
   async function refreshLeaderboard(){
     const hint = document.getElementById("sumHint");
     hint.textContent = "불러오는 중...";
-    try{
-      const out = await apiJsonp({ action:"leaderboard" });
-      if(!out.ok) throw new Error(out.error || "leaderboard failed");
-
-      // 팀 순위 라인
-      const ranks = out.teamRanks || [];
-      const line = ranks.map((x,i)=> `${i+1}위 ${x.team}`).join(" / ");
-      document.getElementById("teamRankLine").textContent = line || "-";
-      if(ranks[0]){
-        document.getElementById("bestTeamTotal").textContent = `${ranks[0].team} : ${fmtKm(ranks[0].total)}`;
-      }else{
-        document.getElementById("bestTeamTotal").textContent = "-";
-      }
-
-      // 개인 TOP10
-      const top10 = out.top10 || [];
-      const box = document.getElementById("top10Box");
-      if(top10.length === 0){
-        box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>데이터 없음</div><div class="right mono">-</div></div>`;
-      }else{
-        box.innerHTML = top10.map((p,i)=> `
-          <div class="rankRow">
-            <div class="mono">${i+1}</div>
-            <div>${escapeHtml(p.name)} <span class="pill">${escapeHtml(p.team || '-')}팀</span></div>
-            <div class="right mono">${fmtKm(p.total)}</div>
-          </div>
-        `).join("");
-      }
-
-      const now = new Date();
-      hint.textContent = `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
-    }catch(e){
+    const out = await apiJsonp({ action:"leaderboard" });
+    if(!out.ok){
       hint.textContent = "랭킹 불러오기 실패";
+      return;
     }
-  }
 
-  function escapeHtml(s){
-    return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+    const ranks = out.teamRanks || [];
+    document.getElementById("teamRankLine").textContent =
+      ranks.map((x,i)=> `${i+1}위 ${x.team}`).join(" / ") || "-";
+    document.getElementById("bestTeamTotal").textContent =
+      ranks[0] ? `${ranks[0].team} : ${fmtKm(ranks[0].total)}` : "-";
+
+    const top10 = out.top10 || [];
+    const box = document.getElementById("top10Box");
+    box.innerHTML = top10.length
+      ? top10.map((p,i)=> `
+        <div class="rankRow">
+          <div class="mono">${i+1}</div>
+          <div>${escapeHtml(p.name)} <span class="pill">${escapeHtml(p.team || '-')}팀</span></div>
+          <div class="right mono">${fmtKm(p.total)}</div>
+        </div>
+      `).join("")
+      : `<div class="rankRow"><div class="mono">-</div><div>데이터 없음</div><div class="right mono">-</div></div>`;
+
+    const now = new Date();
+    hint.textContent = `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
   }
 
   async function lookupTeam(){
     const name = document.getElementById("name").value.trim();
-    if(!name) return setStatus("이름을 입력하세요.", false);
+    if(!name) return showPopup("확인", "이름을 입력하세요.");
 
-    try{
-      const out = await apiJsonp({ action:"lookupTeam", name });
-      if(!out.ok) return showPopup("확인", "DB에 없는 이름입니다. (DB 시트 확인)");
+    const out = await apiJsonp({ action:"lookupTeam", name });
+    if(!out.ok) return showPopup("확인", "DB에 없는 이름입니다. (DB 시트 확인)");
 
-      document.getElementById("team").value = out.team;
-      setStatus(`팀 확인: ${name} → ${out.team}`, true);
-
-      await refreshMyTotal();
-      document.getElementById("distance").focus();
-    }catch(e){
-      showPopup("오류", "DB 연결 실패(웹앱/배포).");
-    }
+    document.getElementById("team").value = out.team;
+    await refreshMyTotal();
+    document.getElementById("distance").focus();
   }
-
   document.getElementById("lookupBtn").addEventListener("click", lookupTeam);
 
-  // Enter UX: 이름칸 Enter -> 팀확인, 거리칸 Enter -> 인증 모달
+  // Enter UX
   document.addEventListener("keydown", (e)=>{
     if(e.key !== "Enter") return;
     const id = document.activeElement?.id;
@@ -400,7 +321,6 @@
     else if(id === "distance") openProofModal();
   });
 
-  // 초기 랭킹 로드
   refreshLeaderboard();
 </script>
 </body>
