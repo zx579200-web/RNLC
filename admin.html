@@ -3,132 +3,221 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>DB 관리자</title>
+  <title>RNLC DB 관리자</title>
   <style>
     body{margin:0;font-family:system-ui,"Noto Sans KR",sans-serif;background:#fff;color:#111}
-    .wrap{width:min(1200px,94vw);margin:0 auto;padding:28px 0 50px}
-    h1{margin:10px 0 14px;font-size:26px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
-    input{font-size:14px;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
+    .wrap{width:min(1200px,94vw);margin:0 auto;padding:26px 0 50px}
+    h1{margin:10px 0 6px;font-size:24px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    a{color:#111}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+    input,select{font-size:14px;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
     button{font-size:14px;padding:10px 12px;border:1px solid #111;border-radius:10px;background:#fff;cursor:pointer}
     button.danger{border-color:#d33}
-    table{width:100%;border-collapse:collapse;border:1px solid #eee;border-radius:12px;overflow:hidden}
-    th,td{padding:10px;border-bottom:1px solid #eee;font-size:13px;white-space:nowrap}
-    th{background:#f7f7f7;text-align:left;position:sticky;top:0}
-    .tableWrap{max-height:70vh;overflow:auto}
-    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace}
-    a{color:#111}
     .hint{color:#666;font-size:12px}
+    .grid{display:grid;grid-template-columns: 1fr 1fr; gap:14px; align-items:start; margin-top:12px}
+    .card{border:1px solid #eee;border-radius:14px;padding:12px;background:#fcfcfc}
+    .card h2{margin:0 0 10px;font-size:16px}
+    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace}
+    .list{max-height:260px;overflow:auto;border:1px solid #eee;border-radius:12px;background:#fff;padding:10px}
+    .pill{display:inline-block;border:1px solid #eee;border-radius:999px;padding:4px 8px;margin:3px 6px 3px 0;font-size:12px}
+    .tableWrap{max-height:60vh;overflow:auto;border:1px solid #eee;border-radius:12px;background:#fff}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eee;font-size:13px;white-space:nowrap}
+    th{background:#f7f7f7;position:sticky;top:0;text-align:left}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="row" style="justify-content:space-between">
-    <h1>DB 관리자</h1>
+  <div class="top">
+    <div>
+      <h1>RNLC DB 관리자</h1>
+      <div class="hint">비밀번호는 구글시트 admin!A1 값</div>
+    </div>
     <a href="./index.html">← 입력 화면</a>
   </div>
 
   <div class="row">
     <input id="pass" type="password" placeholder="관리자 비밀번호"/>
-    <button id="loadBtn">불러오기</button>
-    <button id="csvBtn">CSV 내보내기</button>
+    <button id="loadRosterBtn">명단 불러오기</button>
+    <button id="loadEntriesBtn">기록 불러오기</button>
   </div>
-  <div class="hint">수정: 이름/거리만 변경. 삭제: 해당 행 제거</div>
 
-  <div id="status" class="hint" style="margin:10px 0"></div>
+  <div class="row">
+    <input id="moveName" placeholder="이동할 이름"/>
+    <select id="toTeam">
+      <option value="R">R</option>
+      <option value="N">N</option>
+      <option value="L">L</option>
+      <option value="C">C</option>
+    </select>
+    <button id="moveBtn">팀 이동</button>
+  </div>
 
-  <div class="tableWrap">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th><th>name</th><th>team</th><th>date</th><th>distance</th><th>ts</th><th>관리</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
+  <div id="status" class="hint" style="margin:10px 0;"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>팀 명단(DB 시트)</h2>
+      <div class="hint">B=R, D=N, F=L, H=C</div>
+      <div id="rosterBox" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>입력 기록(entries)</h2>
+      <div class="hint">수정 시 팀은 DB 기준으로 다시 계산되어 저장됩니다.</div>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>date</th><th>name</th><th>team</th><th>distance</th><th>ts</th><th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="entriesTbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-const https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec = "여기에_AppsScript_웹앱_URL_붙여넣기"; // ★필수 변경
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
 
-function setStatus(msg){ document.getElementById("status").textContent = msg || ""; }
+  function setStatus(msg){ document.getElementById("status").textContent = msg || ""; }
 
-async function api(params){
-  const url = new URL(SCRIPT_URL);
-  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k, v));
-  const res = await fetch(url.toString(), { method:"GET" });
-  return await res.json();
-}
+  function apiJsonp(params){
+    return new Promise((resolve, reject) => {
+      const cb = "cb_" + Math.random().toString(36).slice(2);
+      params.callback = cb;
 
-async function load(){
-  const pass = document.getElementById("pass").value.trim();
-  if(!pass) return setStatus("비밀번호를 입력하세요.");
-  const out = await api({action:"list", pass});
-  if(!out.ok) return setStatus("불러오기 실패: " + (out.error||""));
-  render(out.rows || []);
-  setStatus(`rows: ${(out.rows||[]).length}`);
-}
+      const url = new URL(SCRIPT_URL);
+      Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
 
-function render(rows){
-  const tb = document.getElementById("tbody");
-  tb.innerHTML = rows.slice().sort((a,b)=>b.ts-a.ts).map((r,i)=>`
-    <tr>
-      <td class="mono">${i+1}</td>
-      <td>${escapeHtml(r.name)}</td>
-      <td>${r.team}</td>
-      <td class="mono">${r.date}</td>
-      <td class="mono">${r.distance}</td>
-      <td class="mono">${r.ts}</td>
-      <td>
-        <button onclick="editRow(${r.ts})">수정</button>
-        <button class="danger" onclick="delRow(${r.ts})">삭제</button>
-      </td>
-    </tr>
-  `).join("") || `<tr><td colspan="7" class="hint">데이터 없음</td></tr>`;
-}
+      const script = document.createElement("script");
+      window[cb] = (data) => { cleanup(); resolve(data); };
+      script.onerror = () => { cleanup(); reject(new Error("JSONP load error")); };
+      script.src = url.toString();
+      document.body.appendChild(script);
 
-function escapeHtml(str){
-  return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-}
+      function cleanup(){
+        try{ delete window[cb]; }catch(e){}
+        script.remove();
+      }
+    });
+  }
 
-window.editRow = async (ts) => {
-  const pass = document.getElementById("pass").value.trim();
-  const name = prompt("이름");
-  if(name === null) return;
-  const distance = prompt("거리(km)");
-  if(distance === null) return;
-  const out = await api({action:"update", pass, ts, name:name.trim(), distance});
-  if(!out.ok) return setStatus("수정 실패: " + (out.error||""));
-  await load();
-};
+  function getPass(){
+    const pass = document.getElementById("pass").value.trim();
+    if(!pass){ setStatus("비밀번호를 입력하세요."); return ""; }
+    return pass;
+  }
 
-window.delRow = async (ts) => {
-  const pass = document.getElementById("pass").value.trim();
-  if(!confirm("삭제할까요?")) return;
-  const out = await api({action:"delete", pass, ts});
-  if(!out.ok) return setStatus("삭제 실패: " + (out.error||""));
-  await load();
-};
+  async function loadRoster(){
+    const pass = getPass(); if(!pass) return;
+    try{
+      const out = await apiJsonp({ action:"roster", pass });
+      if(!out.ok) return setStatus("명단 불러오기 실패: " + (out.error||""));
 
-document.getElementById("loadBtn").addEventListener("click", load);
+      const r = out.roster || {R:[],N:[],L:[],C:[]};
+      const html = ["R","N","L","C"].map(t => {
+        const pills = (r[t]||[]).map(n => `<span class="pill">${escapeHtml(n)}</span>`).join("");
+        return `<div style="margin:10px 0;"><b>${t}팀</b><div>${pills || '<span class="hint">없음</span>'}</div></div>`;
+      }).join("");
+      document.getElementById("rosterBox").innerHTML = html;
+      setStatus("명단 불러오기 완료");
+    }catch(e){
+      setStatus("명단 불러오기 실패(웹앱/배포 확인)");
+    }
+  }
 
-document.getElementById("csvBtn").addEventListener("click", async ()=>{
-  const pass = document.getElementById("pass").value.trim();
-  if(!pass) return setStatus("비밀번호를 입력하세요.");
-  const out = await api({action:"list", pass});
-  if(!out.ok) return setStatus("내보내기 실패: " + (out.error||""));
-  const rows = out.rows || [];
-  const header = ["ts","date","name","team","distance"];
-  const csv = [header.join(",")].concat(rows.map(r =>
-    [r.ts,r.date,r.name,r.team,r.distance].map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")
-  )).join("\n");
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = "RNLC_entries.csv"; a.click();
-  URL.revokeObjectURL(url);
-});
+  async function moveMember(){
+    const pass = getPass(); if(!pass) return;
+    const name = document.getElementById("moveName").value.trim();
+    const toTeam = document.getElementById("toTeam").value.trim();
+    if(!name) return setStatus("이동할 이름을 입력하세요.");
+
+    if(!confirm(`${name} 을(를) ${toTeam}팀으로 이동할까요?`)) return;
+
+    try{
+      const out = await apiJsonp({ action:"move", pass, name, toTeam });
+      if(!out.ok) return setStatus("팀 이동 실패: " + (out.error||""));
+      setStatus("팀 이동 완료");
+      await loadRoster();
+    }catch(e){
+      setStatus("팀 이동 실패(웹앱/배포 확인)");
+    }
+  }
+
+  async function loadEntries(){
+    const pass = getPass(); if(!pass) return;
+    try{
+      const out = await apiJsonp({ action:"entriesList", pass });
+      if(!out.ok) return setStatus("기록 불러오기 실패: " + (out.error||""));
+
+      const rows = (out.rows || []).slice().sort((a,b)=>b.ts-a.ts);
+      const tb = document.getElementById("entriesTbody");
+      tb.innerHTML = rows.map((r,i)=>`
+        <tr>
+          <td class="mono">${i+1}</td>
+          <td class="mono">${escapeHtml(r.date)}</td>
+          <td>${escapeHtml(r.name)}</td>
+          <td>${escapeHtml(r.team)}</td>
+          <td class="mono">${r.distance}</td>
+          <td class="mono">${r.ts}</td>
+          <td>
+            <button onclick="editEntry(${r.ts}, '${escapeJs(r.name)}', ${r.distance})">수정</button>
+            <button class="danger" onclick="deleteEntry(${r.ts})">삭제</button>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="7" class="hint">데이터 없음</td></tr>`;
+
+      setStatus(`기록 ${rows.length}건 불러오기 완료`);
+    }catch(e){
+      setStatus("기록 불러오기 실패(웹앱/배포 확인)");
+    }
+  }
+
+  window.editEntry = async (ts, curName, curDist) => {
+    const pass = getPass(); if(!pass) return;
+    const name = prompt("이름(DB에 존재해야 함)", curName);
+    if(name === null) return;
+    const dist = prompt("거리(km)", String(curDist));
+    if(dist === null) return;
+
+    try{
+      const out = await apiJsonp({ action:"entriesUpdate", pass, ts, name: name.trim(), distance: dist });
+      if(!out.ok) return setStatus("수정 실패: " + (out.error||""));
+      setStatus(`수정 완료 (팀은 DB 기준으로 ${out.team}로 저장됨)`);
+      await loadEntries();
+    }catch(e){
+      setStatus("수정 실패(웹앱/배포 확인)");
+    }
+  };
+
+  window.deleteEntry = async (ts) => {
+    const pass = getPass(); if(!pass) return;
+    if(!confirm("이 기록을 삭제할까요?")) return;
+    try{
+      const out = await apiJsonp({ action:"entriesDelete", pass, ts });
+      if(!out.ok) return setStatus("삭제 실패: " + (out.error||""));
+      setStatus("삭제 완료");
+      await loadEntries();
+    }catch(e){
+      setStatus("삭제 실패(웹앱/배포 확인)");
+    }
+  };
+
+  function escapeHtml(s){
+    return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+  function escapeJs(s){
+    return String(s||"").replaceAll("\\","\\\\").replaceAll("'","\\'");
+  }
+
+  document.getElementById("loadRosterBtn").addEventListener("click", loadRoster);
+  document.getElementById("moveBtn").addEventListener("click", moveMember);
+  document.getElementById("loadEntriesBtn").addEventListener("click", loadEntries);
 </script>
 </body>
 </html>
