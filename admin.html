@@ -2,90 +2,115 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>RNLC DB 관리자</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>RNLC 관리자</title>
   <style>
-    body{margin:0;font-family:system-ui,"Noto Sans KR",sans-serif;background:#fff;color:#111}
-    .wrap{width:min(1200px,94vw);margin:0 auto;padding:26px 0 50px}
-    h1{margin:10px 0 6px;font-size:24px}
-    .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-    a{color:#111}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
-    input,select{font-size:14px;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
-    button{font-size:14px;padding:10px 12px;border:1px solid #111;border-radius:10px;background:#fff;cursor:pointer}
-    button.danger{border-color:#d33}
-    .hint{color:#666;font-size:12px}
-    .grid{display:grid;grid-template-columns: 1fr 1fr; gap:14px; align-items:start; margin-top:12px}
-    .card{border:1px solid #eee;border-radius:14px;padding:12px;background:#fcfcfc}
-    .card h2{margin:0 0 10px;font-size:16px}
-    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace}
-    .list{max-height:260px;overflow:auto;border:1px solid #eee;border-radius:12px;background:#fff;padding:10px}
-    .pill{display:inline-block;border:1px solid #eee;border-radius:999px;padding:4px 8px;margin:3px 6px 3px 0;font-size:12px}
-    .tableWrap{max-height:60vh;overflow:auto;border:1px solid #eee;border-radius:12px;background:#fff}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid #eee;font-size:13px;white-space:nowrap}
-    th{background:#f7f7f7;position:sticky;top:0;text-align:left}
-    @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+    :root{ --b:#111; --muted:#666; --line:#eee; --radius:16px; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#fff; color:#111; }
+    .wrap{ width:min(900px, 92vw); margin:0 auto; padding:18px 0 44px; }
+    h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:28px; }
+    .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; padding:14px; }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .input{ height:48px; border:2px solid var(--b); border-radius:12px; padding:10px 12px; font-size:15px; outline:none; }
+    .btn{ height:48px; border:2px solid var(--b); border-radius:12px; background:#fff; font-size:15px; font-weight:900; cursor:pointer; padding:0 14px; }
+    .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
+    .section{ margin-top:14px; }
+    h2{ margin:12px 0 10px; font-size:16px; font-weight:900; }
+
+    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    th, td{ border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; }
+    th{ font-weight:900; background:#fafafa; }
+    .mono{ font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+    .right{ text-align:right; }
+    .pill{ display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
+
+    .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.25); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
+    .toast{ width:min(420px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
+    .toastTitle{ font-size:18px; font-weight:1000; margin:4px 0 8px; }
+    .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
+    .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
   </style>
 </head>
+
 <body>
 <div class="wrap">
-  <div class="top">
-    <div>
-      <h1>RNLC DB 관리자</h1>
-      <div class="hint">비밀번호는 구글시트 admin!A1 값</div>
+  <h1>RNLC 관리자</h1>
+
+  <div class="card">
+    <div class="row">
+      <input id="pass" class="input" style="width:220px" placeholder="관리자 비밀번호(pass)"/>
+      <button class="btn" id="btnLoad">불러오기</button>
+      <a class="btn" href="./index.html" style="text-decoration:none; color:#111; display:inline-flex; align-items:center;">← 메인</a>
     </div>
-    <a href="./index.html">← 입력 화면</a>
+    <div class="hint">
+      * 비밀번호는 스프레드시트의 <b>admin</b> 시트 <b>A1</b> 값입니다.
+    </div>
   </div>
 
-  <div class="row">
-    <input id="pass" type="password" placeholder="관리자 비밀번호"/>
-    <button id="loadRosterBtn">명단 불러오기</button>
-    <button id="loadEntriesBtn">기록 불러오기</button>
+  <div class="section card">
+    <h2>명단(DB)</h2>
+    <div class="row" style="margin-bottom:10px;">
+      <input id="moveName" class="input" style="width:220px" placeholder="이동할 이름"/>
+      <select id="toTeam" class="input" style="width:120px">
+        <option value="R">R</option>
+        <option value="N">N</option>
+        <option value="L">L</option>
+        <option value="C">C</option>
+      </select>
+      <button class="btn" id="btnMove">팀 이동</button>
+      <span class="hint">* DB 시트(B/D/F/H) 배정 수정</span>
+    </div>
+    <div id="rosterBox" class="hint">불러오기 전</div>
   </div>
 
-  <div class="row">
-    <input id="moveName" placeholder="이동할 이름"/>
-    <select id="toTeam">
-      <option value="R">R</option>
-      <option value="N">N</option>
-      <option value="L">L</option>
-      <option value="C">C</option>
-    </select>
-    <button id="moveBtn">팀 이동</button>
+  <div class="section card">
+    <h2>기록(entries)</h2>
+    <div class="hint" style="margin-bottom:8px;">
+      * 200km 초과(counted=false)는 누계/랭킹 집계 제외
+    </div>
+    <div style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th class="mono">ts</th>
+            <th>date</th>
+            <th>name</th>
+            <th>team</th>
+            <th class="right">km</th>
+            <th>counted</th>
+            <th>note</th>
+          </tr>
+        </thead>
+        <tbody id="entriesBody">
+          <tr><td colspan="7" class="hint">불러오기 전</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+</div>
 
-  <div id="status" class="hint" style="margin:10px 0;"></div>
-
-  <div class="grid">
-    <div class="card">
-      <h2>팀 명단(DB 시트)</h2>
-      <div class="hint">B=R, D=N, F=L, H=C</div>
-      <div id="rosterBox" class="list"></div>
-    </div>
-
-    <div class="card">
-      <h2>입력 기록(entries)</h2>
-      <div class="hint">수정 시 팀은 DB 기준으로 다시 계산되어 저장됩니다.</div>
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>date</th><th>name</th><th>team</th><th>distance</th><th>ts</th><th>관리</th>
-            </tr>
-          </thead>
-          <tbody id="entriesTbody"></tbody>
-        </table>
-      </div>
-    </div>
+<div class="toastMask" id="toastMask">
+  <div class="toast">
+    <div class="toastTitle" id="toastTitle">안내</div>
+    <div class="toastBody" id="toastBody"></div>
+    <button class="toastBtn" id="toastBtn">확인</button>
   </div>
 </div>
 
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
 
-  function setStatus(msg){ document.getElementById("status").textContent = msg || ""; }
+  function showPopup(title, body){
+    document.getElementById("toastTitle").textContent = title || "안내";
+    document.getElementById("toastBody").textContent = body || "";
+    document.getElementById("toastMask").style.display = "flex";
+  }
+  function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
+  document.getElementById("toastBtn").addEventListener("click", hidePopup);
+  document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
 
+  // JSONP
   function apiJsonp(params){
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
@@ -107,117 +132,74 @@
     });
   }
 
-  function getPass(){
-    const pass = document.getElementById("pass").value.trim();
-    if(!pass){ setStatus("비밀번호를 입력하세요."); return ""; }
-    return pass;
+  function passValue(){
+    return document.getElementById("pass").value.trim();
   }
 
-  async function loadRoster(){
-    const pass = getPass(); if(!pass) return;
-    try{
-      const out = await apiJsonp({ action:"roster", pass });
-      if(!out.ok) return setStatus("명단 불러오기 실패: " + (out.error||""));
+  function renderRoster(roster){
+    const teams = ["R","N","L","C"];
+    const html = teams.map(t=>{
+      const list = (roster[t] || []).map(n=>`<span class="pill">${n}</span>`).join(" ");
+      return `<div style="margin:8px 0;"><b>${t}팀</b> (${(roster[t]||[]).length}명)<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${list || "<span class='hint'>-</span>"}</div></div>`;
+    }).join("");
+    document.getElementById("rosterBox").innerHTML = html;
+  }
 
-      const r = out.roster || {R:[],N:[],L:[],C:[]};
-      const html = ["R","N","L","C"].map(t => {
-        const pills = (r[t]||[]).map(n => `<span class="pill">${escapeHtml(n)}</span>`).join("");
-        return `<div style="margin:10px 0;"><b>${t}팀</b><div>${pills || '<span class="hint">없음</span>'}</div></div>`;
-      }).join("");
-      document.getElementById("rosterBox").innerHTML = html;
-      setStatus("명단 불러오기 완료");
-    }catch(e){
-      setStatus("명단 불러오기 실패(웹앱/배포 확인)");
+  function renderEntries(rows){
+    const body = document.getElementById("entriesBody");
+    if(!rows || !rows.length){
+      body.innerHTML = `<tr><td colspan="7" class="hint">데이터 없음</td></tr>`;
+      return;
     }
+    // 최신이 위로
+    rows.sort((a,b)=> (b.ts||0) - (a.ts||0));
+
+    body.innerHTML = rows.slice(0, 300).map(r=>`
+      <tr>
+        <td class="mono">${r.ts||""}</td>
+        <td>${r.date||""}</td>
+        <td>${r.name||""}</td>
+        <td>${r.team||""}</td>
+        <td class="right mono">${(r.distance||0).toString()}</td>
+        <td>${String(r.counted)}</td>
+        <td class="mono">${r.note||""}</td>
+      </tr>
+    `).join("");
   }
 
-  async function moveMember(){
-    const pass = getPass(); if(!pass) return;
+  async function loadAll(){
+    const pass = passValue();
+    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
+
+    const [roster, entries] = await Promise.all([
+      apiJsonp({ action:"roster", pass }),
+      apiJsonp({ action:"entriesList", pass }),
+    ]);
+
+    if(!roster.ok) return showPopup("오류", roster.error || "roster 실패");
+    if(!entries.ok) return showPopup("오류", entries.error || "entries 실패");
+
+    renderRoster(roster.roster);
+    renderEntries(entries.rows);
+    showPopup("완료", "관리자 데이터 불러오기 완료");
+  }
+
+  async function move(){
+    const pass = passValue();
     const name = document.getElementById("moveName").value.trim();
-    const toTeam = document.getElementById("toTeam").value.trim();
-    if(!name) return setStatus("이동할 이름을 입력하세요.");
+    const toTeam = document.getElementById("toTeam").value;
 
-    if(!confirm(`${name} 을(를) ${toTeam}팀으로 이동할까요?`)) return;
+    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
+    if(!name) return showPopup("확인", "이동할 이름을 입력하세요.");
 
-    try{
-      const out = await apiJsonp({ action:"move", pass, name, toTeam });
-      if(!out.ok) return setStatus("팀 이동 실패: " + (out.error||""));
-      setStatus("팀 이동 완료");
-      await loadRoster();
-    }catch(e){
-      setStatus("팀 이동 실패(웹앱/배포 확인)");
-    }
+    const out = await apiJsonp({ action:"move", pass, name, toTeam });
+    if(!out.ok) return showPopup("오류", out.error || "팀 이동 실패");
+
+    await loadAll();
   }
 
-  async function loadEntries(){
-    const pass = getPass(); if(!pass) return;
-    try{
-      const out = await apiJsonp({ action:"entriesList", pass });
-      if(!out.ok) return setStatus("기록 불러오기 실패: " + (out.error||""));
-
-      const rows = (out.rows || []).slice().sort((a,b)=>b.ts-a.ts);
-      const tb = document.getElementById("entriesTbody");
-      tb.innerHTML = rows.map((r,i)=>`
-        <tr>
-          <td class="mono">${i+1}</td>
-          <td class="mono">${escapeHtml(r.date)}</td>
-          <td>${escapeHtml(r.name)}</td>
-          <td>${escapeHtml(r.team)}</td>
-          <td class="mono">${r.distance}</td>
-          <td class="mono">${r.ts}</td>
-          <td>
-            <button onclick="editEntry(${r.ts}, '${escapeJs(r.name)}', ${r.distance})">수정</button>
-            <button class="danger" onclick="deleteEntry(${r.ts})">삭제</button>
-          </td>
-        </tr>
-      `).join("") || `<tr><td colspan="7" class="hint">데이터 없음</td></tr>`;
-
-      setStatus(`기록 ${rows.length}건 불러오기 완료`);
-    }catch(e){
-      setStatus("기록 불러오기 실패(웹앱/배포 확인)");
-    }
-  }
-
-  window.editEntry = async (ts, curName, curDist) => {
-    const pass = getPass(); if(!pass) return;
-    const name = prompt("이름(DB에 존재해야 함)", curName);
-    if(name === null) return;
-    const dist = prompt("거리(km)", String(curDist));
-    if(dist === null) return;
-
-    try{
-      const out = await apiJsonp({ action:"entriesUpdate", pass, ts, name: name.trim(), distance: dist });
-      if(!out.ok) return setStatus("수정 실패: " + (out.error||""));
-      setStatus(`수정 완료 (팀은 DB 기준으로 ${out.team}로 저장됨)`);
-      await loadEntries();
-    }catch(e){
-      setStatus("수정 실패(웹앱/배포 확인)");
-    }
-  };
-
-  window.deleteEntry = async (ts) => {
-    const pass = getPass(); if(!pass) return;
-    if(!confirm("이 기록을 삭제할까요?")) return;
-    try{
-      const out = await apiJsonp({ action:"entriesDelete", pass, ts });
-      if(!out.ok) return setStatus("삭제 실패: " + (out.error||""));
-      setStatus("삭제 완료");
-      await loadEntries();
-    }catch(e){
-      setStatus("삭제 실패(웹앱/배포 확인)");
-    }
-  };
-
-  function escapeHtml(s){
-    return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-  }
-  function escapeJs(s){
-    return String(s||"").replaceAll("\\","\\\\").replaceAll("'","\\'");
-  }
-
-  document.getElementById("loadRosterBtn").addEventListener("click", loadRoster);
-  document.getElementById("moveBtn").addEventListener("click", moveMember);
-  document.getElementById("loadEntriesBtn").addEventListener("click", loadEntries);
+  document.getElementById("btnLoad").addEventListener("click", loadAll);
+  document.getElementById("btnMove").addEventListener("click", move);
 </script>
 </body>
 </html>
