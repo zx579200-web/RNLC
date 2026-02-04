@@ -75,6 +75,11 @@
       font-size:16px;
     }
 
+    .btn[disabled]{
+      opacity:0.5;
+      cursor:not-allowed;
+    }
+
     .unitWrap{ position:relative; }
     .unit{
       position:absolute;
@@ -254,6 +259,7 @@
         </div>
         <div class="hint">* 인증 캡처는 단톡방에 업로드(운영)</div>
         <div class="hint">* 200km 초과 입력은 기록은 남지만 누계/랭킹에는 합산되지 않습니다.</div>
+        <div class="hint">* 입력 후 버튼은 60초 동안 비활성화됩니다(중복 방지).</div>
       </div>
 
       <div class="fieldGroup">
@@ -295,13 +301,11 @@
       <div class="rankList" id="top10Box"></div>
     </div>
 
-    <!-- ✅ 하단 관리자 버튼(버튼 방식) -->
     <div class="bottomBar">
       <a class="adminBtn" href="./admin.html">DB(관리자)</a>
     </div>
   </div>
 
-  <!-- 팝업 -->
   <div class="toastMask" id="toastMask">
     <div class="toast">
       <div class="toastTitle" id="toastTitle">완료되었습니다</div>
@@ -311,8 +315,8 @@
   </div>
 
 <script>
-  // ✅ 네 웹앱 주소
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
+  const COOLDOWN_SECONDS = 60;
 
   function parseKm(v){
     const n = Number(String(v).trim().replace(",", "."));
@@ -326,7 +330,6 @@
     return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
   }
 
-  // JSONP
   function apiJsonp(params){
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
@@ -348,7 +351,6 @@
     });
   }
 
-  // popup
   function showPopup(title, body){
     document.getElementById("toastTitle").textContent = title || "완료되었습니다";
     document.getElementById("toastBody").textContent = body || "";
@@ -357,6 +359,38 @@
   function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
   document.getElementById("toastBtn").addEventListener("click", hidePopup);
   document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
+
+  // ===== 버튼 쿨다운(프론트) =====
+  let submitLockUntil = 0;
+  let submitTimer = null;
+
+  function unlockSubmitButton(){
+    submitLockUntil = 0;
+    clearInterval(submitTimer);
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = false;
+    btn.textContent = "입력 완료";
+  }
+
+  function lockSubmitButton(seconds){
+    const btn = document.getElementById("submitBtn");
+    const baseText = "입력 완료";
+    submitLockUntil = Date.now() + seconds*1000;
+
+    btn.disabled = true;
+
+    clearInterval(submitTimer);
+    submitTimer = setInterval(()=>{
+      const left = Math.ceil((submitLockUntil - Date.now())/1000);
+      if(left <= 0){
+        clearInterval(submitTimer);
+        btn.disabled = false;
+        btn.textContent = baseText;
+        return;
+      }
+      btn.textContent = `${baseText} (${left}s)`;
+    }, 250);
+  }
 
   async function lookupTeam(){
     const name = document.getElementById("name").value.trim();
@@ -371,6 +405,9 @@
   }
 
   async function submit(){
+    // 프론트 잠금 상태면 무시
+    if(Date.now() < submitLockUntil) return;
+
     const name = document.getElementById("name").value.trim();
     const team = document.getElementById("team").value.trim();
     const distRaw = document.getElementById("distance").value.trim();
@@ -380,8 +417,27 @@
     if(!team) return showPopup("확인", "[입력] 버튼으로 팀을 먼저 확인하세요.");
     if(!Number.isFinite(km) || km <= 0) return showPopup("확인", "거리(km)를 0보다 큰 숫자로 입력하세요.");
 
-    const out = await apiJsonp({ action:"submit", name, distance: distRaw });
-    if(!out.ok) return showPopup("오류", out.error || "저장 실패");
+    // ✅ 눌렀으면 즉시 60초 잠금(중복 방지)
+    lockSubmitButton(COOLDOWN_SECONDS);
+
+    let out;
+    try{
+      out = await apiJsonp({ action:"submit", name, distance: distRaw });
+    }catch(e){
+      unlockSubmitButton();
+      return showPopup("오류", "네트워크 오류로 저장 실패. 다시 시도해 주세요.");
+    }
+
+    if(!out.ok){
+      // 서버 에러면 잠금 해제(사용자 재시도 가능)
+      unlockSubmitButton();
+
+      // 서버 쿨다운 메시지 가독성 처리
+      if(String(out.error || "").includes("cooldown")){
+        return showPopup("잠시만요", `중복 방지를 위해 ${COOLDOWN_SECONDS}초 간 재입력이 제한됩니다.\n잠시 후 다시 시도해 주세요.`);
+      }
+      return showPopup("오류", out.error || "저장 실패");
+    }
 
     const base = `${out.date}\n${out.name} / ${out.team}팀 / ${out.distance}km\n기록 저장 완료`;
     const msg = (out.counted === false) ? base + `\n※ 200km 초과로 누계/랭킹 집계 제외` : base;
