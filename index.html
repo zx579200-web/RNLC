@@ -611,9 +611,12 @@
       if(recentFilter.myTeam && teamNow && String(r.team||"") !== teamNow) return false;
       if(recentFilter.myName && nameNow && String(r.name||"") !== nameNow) return false;
       if(recentFilter.today){
-        const d = String(r.date||"").slice(0,10);
-        if(d !== todayStr) return false;
-      }
+        const t = Number(r.ts);
+        if(!Number.isFinite(t)) return false;           // ts 없으면 제외
+        const d2 = ymdLocal(new Date(t));               // ts로 날짜 계산
+        if(d2 !== todayStr) return false;
+  }
+
       return true;
     });
   }
@@ -685,3 +688,4 @@
 </script>
 </body>
 </html>
+
