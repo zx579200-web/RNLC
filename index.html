@@ -469,12 +469,26 @@
     const name = escapeHtml(r.name || "");
     const team = escapeHtml(r.team || "-");
 
+
     const dist = Number(r.distance) || 0;
-    const eff  = Number(r.effectiveDistance) || 0;
-    const capped = !!r.capped;
+
+    // effectiveDistance가 없는(구버전 entries) 기록은 null 처리
+
+    const effRaw = r.effectiveDistance;
+
+    const eff = (effRaw === null || effRaw === undefined || effRaw === "")
+      ? null
+      : Number(effRaw);
+
+    // capped 판단도 eff가 있을 때만 신뢰
+
+    const capped = (eff !== null) ? (eff < dist) : false;
+
 
     const badge = capped ? `<span class="pill pillWarn">200 캡</span>` : "";
-    const rightText = capped ? `${eff} / ${dist}` : `${dist}`;
+
+    const rightText = (eff !== null && capped) ? `${eff} / ${dist}` : `${dist}`;
+
 
     return `
       <div class="rankRow" style="grid-template-columns:140px 1fr 120px;">
@@ -571,3 +585,4 @@
 </script>
 </body>
 </html>
+
