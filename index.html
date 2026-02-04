@@ -33,82 +33,87 @@
       border:1px solid var(--line);
       border-radius:var(--radius);
       background:#fff;
-      padding:14px;
+      overflow:hidden;
+      box-shadow:0 6px 18px rgba(0,0,0,0.04);
     }
+    .cardPad{ padding:16px; }
 
-    .fieldGroup{ margin:12px 0; }
-    .label{
-      display:block;
-      font-size:14px;
-      margin:0 0 8px;
-      font-weight:900;
-    }
     .row{
       display:flex;
       gap:10px;
-      align-items:center;
+      align-items:flex-end;
+      flex-wrap:wrap;
     }
-    .grow{ flex:1; }
-
-    .input{
+    label{
+      display:block;
+      font-weight:800;
+      font-size:13px;
+      margin:0 0 6px;
+      color:var(--muted);
+    }
+    input{
       width:100%;
-      height:56px;
-      border:3px solid var(--b);
-      border-radius:14px;
-      padding:10px 14px;
-      font-size:18px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 12px;
+      font-size:16px;
       outline:none;
     }
+    input:focus{ border-color:#cfcfcf; }
+    .field{ flex:1; min-width:220px; }
+    .fieldSmall{ width:140px; min-width:140px; }
 
     .btn{
-      height:56px;
-      border:2px solid var(--b);
-      border-radius:14px;
-      background:#fff;
-      font-size:18px;
+      border:none;
+      border-radius:12px;
+      padding:12px 14px;
       font-weight:900;
       cursor:pointer;
-      width:100%;
+      font-size:15px;
+      background:#111;
+      color:#fff;
+      min-width:120px;
     }
-    .btn.small{
-      width:120px;
-      font-size:16px;
+    .btnSecondary{
+      background:#f3f3f3;
+      color:#111;
     }
-
-    .btn[disabled]{
-      opacity:0.5;
+    .btn:disabled{
+      opacity:0.55;
       cursor:not-allowed;
     }
 
-    .unitWrap{ position:relative; }
-    .unit{
-      position:absolute;
-      right:14px;
-      top:50%;
-      transform:translateY(-50%);
-      font-size:16px;
-      font-weight:900;
-    }
-    .input.unitPad{ padding-right:58px; }
-
     .hint{
       color:var(--muted);
+      font-size:13px;
+      white-space:pre-line;
+    }
+    .pill{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      background:#f1f1f1;
       font-size:12px;
-      margin-top:6px;
-      line-height:1.4;
+      font-weight:800;
+      margin-left:6px;
+      vertical-align:middle;
     }
 
-    .section{ margin-top:16px; }
+    .section{
+      margin-top:14px;
+      border-top:1px solid var(--line);
+      padding-top:14px;
+    }
     .sectionHead{
       display:flex;
       justify-content:space-between;
-      align-items:baseline;
       gap:10px;
+      align-items:baseline;
       margin:0 0 10px;
     }
     .sectionHead h2{
       margin:0;
-      font-size:16px;
+      font-size:18px;
       font-weight:900;
     }
 
@@ -117,19 +122,24 @@
       grid-template-columns:1fr 1fr;
       gap:10px;
     }
+    @media(max-width:520px){
+      .grid2{ grid-template-columns:1fr; }
+    }
+
     .miniCard{
       border:1px solid var(--line);
       border-radius:14px;
-      background:var(--card);
       padding:12px;
+      background:var(--card);
     }
     .big{
       font-size:22px;
-      font-weight:1000;
+      font-weight:900;
+      margin-top:6px;
     }
     .mono{
-      font-variant-numeric: tabular-nums;
-      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-variant-numeric:tabular-nums;
+      font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
     }
 
     .rankList{
@@ -140,169 +150,208 @@
     }
     .rankRow{
       display:grid;
-      grid-template-columns:44px 1fr 92px;
+      grid-template-columns:40px 1fr 120px;
       gap:10px;
-      padding:12px;
-      border-bottom:1px solid var(--line);
       align-items:center;
-      font-size:14px;
+      padding:10px 12px;
+      border-top:1px solid var(--line);
+      font-size:15px;
     }
-    .rankRow:last-child{ border-bottom:none; }
-    .pill{
-      display:inline-block;
-      border:1px solid #ddd;
-      border-radius:999px;
-      padding:3px 8px;
-      font-size:12px;
-      margin-left:8px;
-      color:#333;
-    }
+    .rankRow:first-child{ border-top:none; }
     .right{ text-align:right; }
 
-    /* 하단 버튼 바 */
     .bottomBar{
-      margin-top:16px;
       display:flex;
       justify-content:flex-end;
-      gap:10px;
-      align-items:center;
+      margin-top:14px;
     }
     .adminBtn{
-      height:46px;
-      padding:0 14px;
-      border:1px solid var(--b);
-      border-radius:12px;
-      background:#fff;
-      font-weight:900;
-      cursor:pointer;
-      font-size:13px;
       text-decoration:none;
+      font-weight:900;
+      font-size:13px;
       color:#111;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 10px;
+      background:#fff;
     }
 
-    /* 팝업 */
     .toastMask{
       position:fixed;
       inset:0;
-      background:rgba(0,0,0,0.25);
+      background:rgba(0,0,0,0.35);
       display:none;
       align-items:center;
       justify-content:center;
-      padding:18px;
-      z-index:9999;
+      padding:14px;
     }
     .toast{
-      width:min(420px, 92vw);
       background:#fff;
-      border:1px solid var(--line);
       border-radius:18px;
-      padding:16px 16px 14px;
-      box-shadow:0 12px 30px rgba(0,0,0,0.12);
-      text-align:center;
+      width:min(420px, 92vw);
+      padding:16px;
+      border:1px solid var(--line);
+      box-shadow:0 10px 26px rgba(0,0,0,0.14);
     }
     .toastTitle{
+      font-weight:900;
       font-size:18px;
-      font-weight:1000;
-      margin:4px 0 8px;
+      margin:0 0 8px;
     }
     .toastBody{
-      font-size:14px;
-      color:#333;
-      margin:0 0 12px;
+      margin:0 0 14px;
+      color:#222;
       white-space:pre-line;
+      line-height:1.35;
+      font-size:14px;
     }
-    .toastBtn{
-      width:100%;
-      height:48px;
-      border:2px solid var(--b);
+    .toastBtnRow{
+      display:flex;
+      justify-content:flex-end;
+    }
+
+    /* ===== 추가: 탭/필터 UI ===== */
+    .tabBar{
+      display:flex;
+      gap:10px;
+      padding:10px;
+      border:1px solid var(--line);
       border-radius:14px;
+      background:var(--card);
+      margin-top:4px;
+    }
+    .tabBtn{
+      flex:1;
+      height:46px;
+      border:2px solid var(--b);
+      border-radius:12px;
+      background:#fff;
+      font-weight:1000;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .tabBtn.active{
+      background:#111;
+      color:#fff;
+    }
+    .tabPanel{ display:none; margin-top:10px; }
+    .tabPanel.active{ display:block; }
+
+    .filterRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:10px 0 10px;
+    }
+    .filterBtn{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 10px;
       background:#fff;
       font-weight:900;
       cursor:pointer;
+      font-size:12px;
     }
-
-    @media (min-width: 900px){
-      .wrap{ width:min(900px, 92vw); }
-      h1{ font-size:44px; }
-      .grid2{ grid-template-columns: repeat(4, 1fr); }
+    .filterBtn.active{
+      border-color:#111;
+      background:#111;
+      color:#fff;
     }
   </style>
 </head>
-
 <body>
   <div class="wrap">
     <h1>RNLC 2월 팀 대항전</h1>
 
     <div class="card">
-      <div class="fieldGroup">
-        <label class="label">이름</label>
+      <div class="cardPad">
         <div class="row">
-          <input id="name" class="input grow" autocomplete="off" placeholder="이름 입력"/>
-          <button id="lookupBtn" class="btn small" type="button">입력</button>
+          <div class="field">
+            <label>이름</label>
+            <input id="name" placeholder="예) 홍길동"/>
+          </div>
+          <div class="fieldSmall">
+            <label>팀</label>
+            <input id="team" placeholder="R/N/L/C" disabled/>
+          </div>
+          <button class="btn btnSecondary" id="lookupBtn">입력</button>
         </div>
-        <div class="hint">* 이름 입력 후 [입력] 버튼으로 팀 확인</div>
-      </div>
 
-      <div class="fieldGroup">
-        <label class="label">팀</label>
-        <input id="team" class="input" readonly placeholder="이름 입력 후 자동 표시"/>
-      </div>
+        <div style="height:10px"></div>
 
-      <div class="fieldGroup">
-        <label class="label">거리입력</label>
-        <div class="unitWrap">
-          <input id="distance" class="input unitPad" inputmode="decimal" placeholder="숫자만 입력"/>
-          <div class="unit">km</div>
+        <div class="row">
+          <div class="field">
+            <label>거리(km)</label>
+            <input id="distance" placeholder="예) 5.2"/>
+            <div class="hint" style="margin-top:6px;">※ 200km 초과 기록은 저장되지만 누계/랭킹 집계에서 제외됩니다.</div>
+          </div>
+          <button class="btn" id="submitBtn">입력 완료</button>
         </div>
-        <div class="hint">* 인증 캡처는 단톡방에 업로드(운영)</div>
-        <div class="hint">* 200km 초과 입력은 기록은 남지만 누계/랭킹에는 합산되지 않습니다.</div>
-        <div class="hint">* 입력 후 버튼은 60초 동안 비활성화됩니다(중복 방지).</div>
-      </div>
 
-      <div class="fieldGroup">
-        <button id="submitBtn" class="btn" type="button">입력 완료</button>
-      </div>
-    </div>
+        <div class="section">
+          <div class="sectionHead">
+            <h2>누계 현황</h2>
+            <div class="hint" id="sumHint">불러오는 중...</div>
+          </div>
 
-    <div class="section">
-      <div class="sectionHead">
-        <h2>누계 현황</h2>
-        <div class="hint" id="sumHint">불러오는 중...</div>
-      </div>
-
-      <div class="grid2">
-        <div class="miniCard">
-          <div class="hint">내 누계</div>
-          <div class="big mono" id="myTotal">-</div>
+          <div class="grid2">
+            <div class="miniCard">
+              <div class="hint">내 누계</div>
+              <div class="big mono" id="myTotal">-</div>
+            </div>
+            <div class="miniCard">
+              <div class="hint">내 팀</div>
+              <div class="big mono" id="myTeam">-</div>
+            </div>
+            <div class="miniCard">
+              <div class="hint">팀 순위</div>
+              <div class="big mono" id="teamRankLine">-</div>
+            </div>
+            <div class="miniCard">
+              <div class="hint">현재 1위 팀 누계</div>
+              <div class="big mono" id="bestTeamTotal">-</div>
+            </div>
+          </div>
         </div>
-        <div class="miniCard">
-          <div class="hint">내 팀</div>
-          <div class="big mono" id="myTeam">-</div>
+
+        <!-- ===== 기록 탭(개인 TOP10 / 최근 인증기록) ===== -->
+        <div class="section">
+          <div class="tabBar" role="tablist" aria-label="기록 탭">
+            <button class="tabBtn active" id="tabTop10" type="button" aria-selected="true">개인 TOP10</button>
+            <button class="tabBtn" id="tabRecent" type="button" aria-selected="false">최근 인증기록</button>
+          </div>
+
+          <!-- TOP10 -->
+          <div class="tabPanel active" id="panelTop10" role="tabpanel">
+            <div class="sectionHead">
+              <h2>개인 TOP 10</h2>
+              <div class="hint">entries 기준 자동 집계</div>
+            </div>
+            <div class="rankList" id="top10Box"></div>
+          </div>
+
+          <!-- Recent -->
+          <div class="tabPanel" id="panelRecent" role="tabpanel">
+            <div class="sectionHead">
+              <h2>최근 인증 기록</h2>
+              <div class="hint">최대 10개 표시</div>
+            </div>
+
+            <div class="filterRow" aria-label="최근 인증 기록 필터">
+              <button class="filterBtn" id="fMyTeam" type="button">내 팀만</button>
+              <button class="filterBtn" id="fMyName" type="button">내 이름만</button>
+              <button class="filterBtn" id="fToday" type="button">오늘만</button>
+              <button class="filterBtn" id="fReset" type="button">전체</button>
+            </div>
+
+            <div class="rankList" id="recentBox"></div>
+          </div>
         </div>
-        <div class="miniCard">
-          <div class="hint">팀 1~4위</div>
-          <div class="big mono" id="teamRankLine">-</div>
-        </div>
-        <div class="miniCard">
-          <div class="hint">현재 1위 팀 누계</div>
-          <div class="big mono" id="bestTeamTotal">-</div>
+
+        <div class="bottomBar">
+          <a class="adminBtn" href="./admin.html">DB(관리자)</a>
         </div>
       </div>
-    </div>
-
-    <div class="section">
-      <div class="sectionHead">
-        <h2>개인 TOP 10</h2>
-        <div class="hint">entries 기준 자동 집계</div>
-      </div>
-      <div class="rankList" id="top10Box"></div>
-    </div>
-
-    <div class="bottomBar">
-      <a class="adminBtn" href="./admin.html">DB(관리자)</a>
     </div>
   </div>
 
@@ -310,7 +359,9 @@
     <div class="toast">
       <div class="toastTitle" id="toastTitle">완료되었습니다</div>
       <div class="toastBody" id="toastBody"></div>
-      <button class="toastBtn" id="toastBtn">확인</button>
+      <div class="toastBtnRow">
+        <button class="btn btnSecondary" id="toastBtn">닫기</button>
+      </div>
     </div>
   </div>
 
@@ -400,7 +451,7 @@
     if(!out.ok) return showPopup("확인", "DB에 없는 이름입니다. (DB 시트 확인)");
 
     document.getElementById("team").value = out.team;
-    await refreshMyTotal();
+    await Promise.all([refreshMyTotal(), refreshRecent()]);
     document.getElementById("distance").focus();
   }
 
@@ -444,7 +495,7 @@
     showPopup("완료되었습니다", msg);
 
     document.getElementById("distance").value = "";
-    await Promise.all([refreshLeaderboard(), refreshMyTotal()]);
+    await Promise.all([refreshLeaderboard(), refreshMyTotal(), refreshRecent()]);
   }
 
   async function refreshMyTotal(){
@@ -492,6 +543,131 @@
     hint.textContent = `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
   }
 
+  // ===== 추가: 최근 인증 기록(탭 + 필터) =====
+  let recentRows = [];
+  const recentFilter = { myTeam:false, myName:false, today:false };
+
+  function ymdLocal(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${dd}`;
+  }
+
+  function setTab(tab){
+    const isTop = (tab === "top10");
+    document.getElementById("tabTop10").classList.toggle("active", isTop);
+    document.getElementById("tabRecent").classList.toggle("active", !isTop);
+    document.getElementById("tabTop10").setAttribute("aria-selected", isTop ? "true" : "false");
+    document.getElementById("tabRecent").setAttribute("aria-selected", isTop ? "false" : "true");
+
+    document.getElementById("panelTop10").classList.toggle("active", isTop);
+    document.getElementById("panelRecent").classList.toggle("active", !isTop);
+
+    if(!isTop) renderRecent();
+  }
+
+  function syncFilterButtons(){
+    document.getElementById("fMyTeam").classList.toggle("active", recentFilter.myTeam);
+    document.getElementById("fMyName").classList.toggle("active", recentFilter.myName);
+    document.getElementById("fToday").classList.toggle("active", recentFilter.today);
+  }
+
+  function toggleFilter(key){
+    recentFilter[key] = !recentFilter[key];
+    syncFilterButtons();
+    renderRecent();
+  }
+
+  function resetFilters(){
+    recentFilter.myTeam = false;
+    recentFilter.myName = false;
+    recentFilter.today = false;
+    syncFilterButtons();
+    renderRecent();
+  }
+
+  function fmtRecentRow(r){
+    const date = escapeHtml(String(r.date || "").slice(0,16)); // yyyy-MM-dd HH:mm
+    const name = escapeHtml(r.name || "");
+    const team = escapeHtml(r.team || "-");
+    const km = fmtKm(r.distance || 0);
+    const extra = (r.counted === false) ? `<span class="pill">집계 제외</span>` : "";
+    return `
+      <div class="rankRow" style="grid-template-columns:140px 1fr 120px;">
+        <div class="mono">${date}</div>
+        <div>${name} <span class="pill">${team}팀</span> ${extra}</div>
+        <div class="right mono">${km}</div>
+      </div>
+    `;
+  }
+
+  function applyRecentFilters(rows){
+    const nameNow = document.getElementById("name").value.trim();
+    const teamNow = document.getElementById("team").value.trim();
+    const todayStr = ymdLocal(new Date());
+
+    return rows.filter(r => {
+      if(recentFilter.myTeam && teamNow && String(r.team||"") !== teamNow) return false;
+      if(recentFilter.myName && nameNow && String(r.name||"") !== nameNow) return false;
+      if(recentFilter.today){
+        const d = String(r.date||"").slice(0,10);
+        if(d !== todayStr) return false;
+      }
+      return true;
+    });
+  }
+
+  async function refreshRecent(){
+    const box = document.getElementById("recentBox");
+    if(!box) return;
+
+    let out;
+    try{
+      // 필터 정확도 위해 100개까지 가져오고, 화면에는 최대 10개만 표시
+      out = await apiJsonp({ action:"recentEntries", limit:"100" });
+    }catch(e){
+      box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>최근 기록 불러오기 실패</div><div class="right mono">-</div></div>`;
+      return;
+    }
+
+    if(!out.ok){
+      box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>최근 기록 불러오기 실패</div><div class="right mono">-</div></div>`;
+      return;
+    }
+
+    recentRows = out.rows || [];
+    renderRecent();
+  }
+
+  function renderRecent(){
+    const box = document.getElementById("recentBox");
+    if(!box) return;
+
+    const filtered = applyRecentFilters(recentRows);
+    const rows = filtered.slice(0, 10);
+
+    box.innerHTML = rows.length
+      ? rows.map(fmtRecentRow).join("")
+      : `<div class="rankRow"><div class="mono">-</div><div>표시할 기록이 없습니다.</div><div class="right mono">-</div></div>`;
+  }
+
+  function initTabsAndFilters(){
+    const t1 = document.getElementById("tabTop10");
+    const t2 = document.getElementById("tabRecent");
+    if(!t1 || !t2) return;
+
+    t1.addEventListener("click", ()=> setTab("top10"));
+    t2.addEventListener("click", ()=> setTab("recent"));
+
+    document.getElementById("fMyTeam").addEventListener("click", ()=> toggleFilter("myTeam"));
+    document.getElementById("fMyName").addEventListener("click", ()=> toggleFilter("myName"));
+    document.getElementById("fToday").addEventListener("click", ()=> toggleFilter("today"));
+    document.getElementById("fReset").addEventListener("click", resetFilters);
+
+    syncFilterButtons();
+  }
+
   document.getElementById("lookupBtn").addEventListener("click", lookupTeam);
   document.getElementById("submitBtn").addEventListener("click", submit);
 
@@ -502,7 +678,10 @@
     else if(id === "distance") submit();
   });
 
+  // 초기 실행
+  initTabsAndFilters();
   refreshLeaderboard();
+  refreshRecent();
 </script>
 </body>
 </html>
