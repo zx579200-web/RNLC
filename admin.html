@@ -48,6 +48,7 @@
     <div class="row">
       <input id="pass" class="input" style="width:220px" placeholder="관리자 비밀번호(pass)"/>
       <button class="btn" id="btnLoad">불러오기</button>
+      <button class="btn" id="btnRebuild">캐시 재계산</button>
       <a class="btn" href="./index.html" style="text-decoration:none; color:#111; display:inline-flex; align-items:center;">← 메인</a>
     </div>
     <div class="hint">
@@ -150,10 +151,18 @@
   function passValue(){ return document.getElementById("pass").value.trim(); }
 
   function renderRoster(roster){
+    // roster는 [{name, team}] 배열로 오므로 team별로 묶기
+    const grouped = { R:[], N:[], L:[], C:[] };
+    (roster || []).forEach(x=>{
+      const t = String(x.team||'').trim();
+      const n = String(x.name||'').trim();
+      if(grouped[t] && n) grouped[t].push(n);
+    });
+
     const teams = ["R","N","L","C"];
     const html = teams.map(t=>{
-      const list = (roster[t] || []).map(n=>`<span class="pill">${n}</span>`).join(" ");
-      return `<div style="margin:8px 0;"><b>${t}팀</b> (${(roster[t]||[]).length}명)
+      const list = (grouped[t] || []).map(n=>`<span class="pill">${n}</span>`).join(" ");
+      return `<div style="margin:8px 0;"><b>${t}팀</b> (${(grouped[t]||[]).length}명)
         <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${list || "<span class='hint'>-</span>"}</div>
       </div>`;
     }).join("");
@@ -197,19 +206,23 @@
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
 
-    const [roster, entries] = await Promise.all([
-      apiJsonp({ action:"roster", pass }),
-      apiJsonp({ action:"entriesList", pass }),
-    ]);
+    try{
+      const [roster, entries] = await Promise.all([
+        apiJsonp({ action:"roster", pass }),
+        apiJsonp({ action:"entriesList", pass }),
+      ]);
 
-    if(!roster.ok) return showPopup("오류", roster.error || "roster 실패");
-    if(!entries.ok) return showPopup("오류", entries.error || "entries 실패");
+      if(!roster.ok) return showPopup("오류", roster.error || "roster 실패");
+      if(!entries.ok) return showPopup("오류", entries.error || "entries 실패");
 
-    renderRoster(roster.roster);
-    allEntries = entries.rows || [];
-    applyFilter();
+      renderRoster(roster.roster);
+      allEntries = entries.rows || [];
+      applyFilter();
 
-    showPopup("완료", "관리자 데이터 불러오기 완료");
+      showPopup("완료", "관리자 데이터 불러오기 완료");
+    }catch(err){
+      showPopup("오류", String(err && err.message ? err.message : err));
+    }
   }
 
   async function move(){
@@ -220,10 +233,35 @@
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
     if(!name) return showPopup("확인", "이동할 이름을 입력하세요.");
 
-    const out = await apiJsonp({ action:"move", pass, name, toTeam });
-    if(!out.ok) return showPopup("오류", out.error || "팀 이동 실패");
+    try{
+      const out = await apiJsonp({ action:"move", pass, name, toTeam });
+      if(!out.ok) return showPopup("오류", out.error || "팀 이동 실패");
 
-    await loadAll();
+      await loadAll();
+    }catch(err){
+      showPopup("오류", String(err && err.message ? err.message : err));
+    }
+  }
+
+  // ✅ 캐시 재계산 버튼
+  async function rebuildCache(){
+    const pass = passValue();
+    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
+
+    const ok = confirm("캐시를 재계산할까요?\n(기록이 많으면 수 초~수십 초 걸릴 수 있습니다)");
+    if(!ok) return;
+
+    showPopup("진행중", "캐시 재계산 중입니다...\n잠시만 기다려 주세요.");
+
+    try{
+      const out = await apiJsonp({ action:"rebuildCache", pass });
+      if(!out || !out.ok) return showPopup("오류", (out && out.error) ? out.error : "rebuildCache 실패");
+
+      showPopup("완료", "캐시 재계산 완료!\n관리자 데이터를 다시 불러옵니다.");
+      await loadAll();
+    }catch(err){
+      showPopup("오류", String(err && err.message ? err.message : err));
+    }
   }
 
   // ✅ 수정: distance만 변경
@@ -236,13 +274,15 @@
     const n = Number(String(v).trim().replace(",", "."));
     if(!Number.isFinite(n) || n <= 0) return showPopup("확인", "거리 값이 올바르지 않습니다.");
 
-    const out = await apiJsonp({ action:"editEntry", pass, ts: String(ts), distance: String(n) });
-    if(!out.ok) return showPopup("오류", out.error || "수정 실패");
+    try{
+      const out = await apiJsonp({ action:"editEntry", pass, ts: String(ts), distance: String(n) });
+      if(!out.ok) return showPopup("오류", out.error || "수정 실패");
 
-    const extra = (out.counted === false) ? "\n※ 200km 초과로 집계 제외" : "";
-    showPopup("완료", `수정되었습니다.\nTS: ${ts}\n거리: ${n}km${extra}`);
-
-    await loadAll();
+      showPopup("완료", `수정되었습니다.\nTS: ${ts}\n거리: ${n}km\n\n※ 수정/삭제 후 통계가 달라지면 [캐시 재계산]을 눌러주세요.`);
+      await loadAll();
+    }catch(err){
+      showPopup("오류", String(err && err.message ? err.message : err));
+    }
   }
 
   // ✅ 삭제
@@ -253,11 +293,15 @@
     const ok = confirm(`정말 삭제할까요?\nTS: ${ts}\n(되돌릴 수 없습니다)`);
     if(!ok) return;
 
-    const out = await apiJsonp({ action:"deleteEntry", pass, ts: String(ts) });
-    if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
+    try{
+      const out = await apiJsonp({ action:"deleteEntry", pass, ts: String(ts) });
+      if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
 
-    showPopup("완료", `삭제되었습니다.\nTS: ${ts}`);
-    await loadAll();
+      showPopup("완료", `삭제되었습니다.\nTS: ${ts}\n\n※ 통계가 달라지면 [캐시 재계산]을 눌러주세요.`);
+      await loadAll();
+    }catch(err){
+      showPopup("오류", String(err && err.message ? err.message : err));
+    }
   }
 
   // 전역 노출(인라인 onclick용)
@@ -265,6 +309,7 @@
   window.deleteEntry = deleteEntry;
 
   document.getElementById("btnLoad").addEventListener("click", loadAll);
+  document.getElementById("btnRebuild").addEventListener("click", rebuildCache);
   document.getElementById("btnMove").addEventListener("click", move);
   document.getElementById("btnFilter").addEventListener("click", applyFilter);
   document.getElementById("btnClear").addEventListener("click", ()=>{
