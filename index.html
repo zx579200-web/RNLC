@@ -5,258 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>RNLC 2월 팀 대항전</title>
   <style>
-    :root{
-      --b:#111; --muted:#666; --card:#fcfcfc; --line:#eee;
-      --radius:16px;
-    }
+    :root{ --b:#111; --muted:#666; --card:#fcfcfc; --line:#eee; --radius:16px; }
     *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family:system-ui,"Noto Sans KR",sans-serif;
-      background:#fff;
-      color:#111;
-    }
-    .wrap{
-      width:min(760px, 92vw);
-      margin:0 auto;
-      padding:18px 0 44px;
-    }
-    h1{
-      margin:14px 0 18px;
-      text-align:center;
-      font-weight:900;
-      font-size:34px;
-      letter-spacing:0.02em;
-    }
+    body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#fff; color:#111; }
+    .wrap{ width:min(760px, 92vw); margin:0 auto; padding:18px 0 44px; }
+    h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:34px; letter-spacing:0.02em; }
 
-    .card{
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      background:#fff;
-      overflow:hidden;
-      box-shadow:0 6px 18px rgba(0,0,0,0.04);
-    }
+    .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
     .cardPad{ padding:16px; }
 
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:flex-end;
-      flex-wrap:wrap;
-    }
-    label{
-      display:block;
-      font-weight:800;
-      font-size:13px;
-      margin:0 0 6px;
-      color:var(--muted);
-    }
-    input{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px 12px;
-      font-size:16px;
-      outline:none;
-    }
+    .row{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+    label{ display:block; font-weight:800; font-size:13px; margin:0 0 6px; color:var(--muted); }
+    input{ width:100%; border:1px solid var(--line); border-radius:12px; padding:12px 12px; font-size:16px; outline:none; }
     input:focus{ border-color:#cfcfcf; }
     .field{ flex:1; min-width:220px; }
     .fieldSmall{ width:140px; min-width:140px; }
 
-    .btn{
-      border:none;
-      border-radius:12px;
-      padding:12px 14px;
-      font-weight:900;
-      cursor:pointer;
-      font-size:15px;
-      background:#111;
-      color:#fff;
-      min-width:120px;
-    }
-    .btnSecondary{
-      background:#f3f3f3;
-      color:#111;
-    }
-    .btn:disabled{
-      opacity:0.55;
-      cursor:not-allowed;
-    }
+    .btn{ border:none; border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; font-size:15px; background:#111; color:#fff; min-width:120px; }
+    .btnSecondary{ background:#f3f3f3; color:#111; }
+    .btn:disabled{ opacity:0.55; cursor:not-allowed; }
 
-    .hint{
-      color:var(--muted);
-      font-size:13px;
-      white-space:pre-line;
-    }
-    .pill{
-      display:inline-block;
-      padding:3px 8px;
-      border-radius:999px;
-      background:#f1f1f1;
-      font-size:12px;
-      font-weight:800;
-      margin-left:6px;
-      vertical-align:middle;
-    }
+    .hint{ color:var(--muted); font-size:13px; white-space:pre-line; }
+    .pill{ display:inline-block; padding:3px 8px; border-radius:999px; background:#f1f1f1; font-size:12px; font-weight:800; margin-left:6px; vertical-align:middle; }
+    .pillDark{ background:#111; color:#fff; }
+    .pillWarn{ background:#ffe9c7; color:#6a3e00; }
 
-    .section{
-      margin-top:14px;
-      border-top:1px solid var(--line);
-      padding-top:14px;
-    }
-    .sectionHead{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:baseline;
-      margin:0 0 10px;
-    }
-    .sectionHead h2{
-      margin:0;
-      font-size:18px;
-      font-weight:900;
-    }
+    .section{ margin-top:14px; border-top:1px solid var(--line); padding-top:14px; }
+    .sectionHead{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin:0 0 10px; }
+    .sectionHead h2{ margin:0; font-size:18px; font-weight:900; }
 
-    .grid2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-    @media(max-width:520px){
-      .grid2{ grid-template-columns:1fr; }
-    }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media(max-width:520px){ .grid2{ grid-template-columns:1fr; } }
 
-    .miniCard{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      background:var(--card);
-    }
-    .big{
-      font-size:22px;
-      font-weight:900;
-      margin-top:6px;
-    }
-    .mono{
-      font-variant-numeric:tabular-nums;
-      font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
+    .miniCard{ border:1px solid var(--line); border-radius:14px; padding:12px; background:var(--card); }
+    .big{ font-size:22px; font-weight:900; margin-top:6px; }
+    .mono{ font-variant-numeric:tabular-nums; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-    .rankList{
-      border:1px solid var(--line);
-      border-radius:14px;
-      overflow:hidden;
-      background:#fff;
-    }
-    .rankRow{
-      display:grid;
-      grid-template-columns:40px 1fr 120px;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      border-top:1px solid var(--line);
-      font-size:15px;
-    }
+    .rankList{ border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; }
+    .rankRow{ display:grid; grid-template-columns:40px 1fr 120px; gap:10px; align-items:center; padding:10px 12px; border-top:1px solid var(--line); font-size:15px; }
     .rankRow:first-child{ border-top:none; }
     .right{ text-align:right; }
 
-    .bottomBar{
-      display:flex;
-      justify-content:flex-end;
-      margin-top:14px;
-    }
-    .adminBtn{
-      text-decoration:none;
-      font-weight:900;
-      font-size:13px;
-      color:#111;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:8px 10px;
-      background:#fff;
-    }
+    .bottomBar{ display:flex; justify-content:flex-end; margin-top:14px; }
+    .adminBtn{ text-decoration:none; font-weight:900; font-size:13px; color:#111; border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; }
 
-    .toastMask{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.35);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:14px;
-    }
-    .toast{
-      background:#fff;
-      border-radius:18px;
-      width:min(420px, 92vw);
-      padding:16px;
-      border:1px solid var(--line);
-      box-shadow:0 10px 26px rgba(0,0,0,0.14);
-    }
-    .toastTitle{
-      font-weight:900;
-      font-size:18px;
-      margin:0 0 8px;
-    }
-    .toastBody{
-      margin:0 0 14px;
-      color:#222;
-      white-space:pre-line;
-      line-height:1.35;
-      font-size:14px;
-    }
-    .toastBtnRow{
-      display:flex;
-      justify-content:flex-end;
-    }
+    .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; padding:14px; }
+    .toast{ background:#fff; border-radius:18px; width:min(420px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
+    .toastTitle{ font-weight:900; font-size:18px; margin:0 0 8px; }
+    .toastBody{ margin:0 0 14px; color:#222; white-space:pre-line; line-height:1.35; font-size:14px; }
+    .toastBtnRow{ display:flex; justify-content:flex-end; }
 
-    /* ===== 추가: 탭/필터 UI ===== */
-    .tabBar{
-      display:flex;
-      gap:10px;
-      padding:10px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:var(--card);
-      margin-top:4px;
-    }
-    .tabBtn{
-      flex:1;
-      height:46px;
-      border:2px solid var(--b);
-      border-radius:12px;
-      background:#fff;
-      font-weight:1000;
-      cursor:pointer;
-      font-size:14px;
-    }
-    .tabBtn.active{
-      background:#111;
-      color:#fff;
-    }
+    /* 탭/필터 */
+    .tabBar{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--card); margin-top:4px; }
+    .tabBtn{ flex:1; height:46px; border:2px solid var(--b); border-radius:12px; background:#fff; font-weight:1000; cursor:pointer; font-size:14px; }
+    .tabBtn.active{ background:#111; color:#fff; }
     .tabPanel{ display:none; margin-top:10px; }
     .tabPanel.active{ display:block; }
 
-    .filterRow{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin:10px 0 10px;
-    }
-    .filterBtn{
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:8px 10px;
-      background:#fff;
-      font-weight:900;
-      cursor:pointer;
-      font-size:12px;
-    }
-    .filterBtn.active{
-      border-color:#111;
-      background:#111;
-      color:#fff;
-    }
+    .filterRow{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 10px; }
+    .filterBtn{ border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; font-weight:900; cursor:pointer; font-size:12px; }
+    .filterBtn.active{ border-color:#111; background:#111; color:#fff; }
+
+    .teamTotalRow{ display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 10px; }
   </style>
 </head>
 <body>
@@ -283,7 +93,7 @@
           <div class="field">
             <label>거리(km)</label>
             <input id="distance" placeholder="예) 5.2"/>
-            <div class="hint" style="margin-top:6px;">※ 200km 초과 기록은 저장되지만 누계/랭킹 집계에서 제외됩니다.</div>
+            <div class="hint" style="margin-top:6px;">※ 200km 초과 기록은 저장되며, <b>누계/랭킹에는 200km까지만 반영</b>됩니다.</div>
           </div>
           <button class="btn" id="submitBtn">입력 완료</button>
         </div>
@@ -314,7 +124,6 @@
           </div>
         </div>
 
-        <!-- ===== 기록 탭(개인 TOP10 / 최근 인증기록) ===== -->
         <div class="section">
           <div class="tabBar" role="tablist" aria-label="기록 탭">
             <button class="tabBtn active" id="tabTop10" type="button" aria-selected="true">개인 TOP10</button>
@@ -325,7 +134,7 @@
           <div class="tabPanel active" id="panelTop10" role="tabpanel">
             <div class="sectionHead">
               <h2>개인 TOP 10</h2>
-              <div class="hint">entries 기준 자동 집계</div>
+              <div class="hint">200km 초과는 200km까지만 반영</div>
             </div>
             <div class="rankList" id="top10Box"></div>
           </div>
@@ -335,6 +144,14 @@
             <div class="sectionHead">
               <h2>최근 인증 기록</h2>
               <div class="hint">최대 10개 표시</div>
+            </div>
+
+            <!-- ✅ 추가: 팀 누적(테스트용/상시표시) -->
+            <div class="teamTotalRow" id="teamTotalsPills">
+              <span class="pill">R: -</span>
+              <span class="pill">N: -</span>
+              <span class="pill">L: -</span>
+              <span class="pill">C: -</span>
             </div>
 
             <div class="filterRow" aria-label="최근 인증 기록 필터">
@@ -366,7 +183,8 @@
   </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
+  // ✅ 반드시 본인 Apps Script WebApp /exec URL
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec";
   const COOLDOWN_SECONDS = 60;
 
   function parseKm(v){
@@ -378,7 +196,12 @@
     return x.toLocaleString("ko-KR", { maximumFractionDigits: 2 }) + " km";
   }
   function escapeHtml(s){
-    return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+    return String(s||"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
 
   function apiJsonp(params){
@@ -429,7 +252,6 @@
     submitLockUntil = Date.now() + seconds*1000;
 
     btn.disabled = true;
-
     clearInterval(submitTimer);
     submitTimer = setInterval(()=>{
       const left = Math.ceil((submitLockUntil - Date.now())/1000);
@@ -447,16 +269,21 @@
     const name = document.getElementById("name").value.trim();
     if(!name) return showPopup("확인", "이름을 입력하세요.");
 
-    const out = await apiJsonp({ action:"lookupTeam", name });
+    let out;
+    try{
+      out = await apiJsonp({ action:"lookupTeam", name });
+    }catch(e){
+      return showPopup("오류", "네트워크 오류. 다시 시도해 주세요.");
+    }
+
     if(!out.ok) return showPopup("확인", "DB에 없는 이름입니다. (DB 시트 확인)");
 
     document.getElementById("team").value = out.team;
-    await Promise.all([refreshMyTotal(), refreshRecent()]);
+    await Promise.all([refreshMyTotal(), refreshLeaderboardAndTeamTotals(), refreshRecent()]);
     document.getElementById("distance").focus();
   }
 
   async function submit(){
-    // 프론트 잠금 상태면 무시
     if(Date.now() < submitLockUntil) return;
 
     const name = document.getElementById("name").value.trim();
@@ -468,7 +295,6 @@
     if(!team) return showPopup("확인", "[입력] 버튼으로 팀을 먼저 확인하세요.");
     if(!Number.isFinite(km) || km <= 0) return showPopup("확인", "거리(km)를 0보다 큰 숫자로 입력하세요.");
 
-    // ✅ 눌렀으면 즉시 60초 잠금(중복 방지)
     lockSubmitButton(COOLDOWN_SECONDS);
 
     let out;
@@ -480,22 +306,24 @@
     }
 
     if(!out.ok){
-      // 서버 에러면 잠금 해제(사용자 재시도 가능)
       unlockSubmitButton();
-
-      // 서버 쿨다운 메시지 가독성 처리
       if(String(out.error || "").includes("cooldown")){
         return showPopup("잠시만요", `중복 방지를 위해 ${COOLDOWN_SECONDS}초 간 재입력이 제한됩니다.\n잠시 후 다시 시도해 주세요.`);
       }
       return showPopup("오류", out.error || "저장 실패");
     }
 
-    const base = `${out.date}\n${out.name} / ${out.team}팀 / ${out.distance}km\n기록 저장 완료`;
-    const msg = (out.counted === false) ? base + `\n※ 200km 초과로 누계/랭킹 집계 제외` : base;
+    const eff = out.effectiveDistance ?? null;
+    const capped = !!out.capped;
+
+    let msg = `${out.date}\n${out.name} / ${out.team}팀 / 입력: ${out.distance}km`;
+    if (eff != null) msg += `\n집계 반영: ${eff}km`;
+    if (capped) msg += `\n※ 200km 초과분은 집계에서 제외(200km까지만 반영)`;
+
     showPopup("완료되었습니다", msg);
 
     document.getElementById("distance").value = "";
-    await Promise.all([refreshLeaderboard(), refreshMyTotal(), refreshRecent()]);
+    await Promise.all([refreshLeaderboardAndTeamTotals(), refreshMyTotal(), refreshRecent()]);
   }
 
   async function refreshMyTotal(){
@@ -505,28 +333,45 @@
       document.getElementById("myTeam").textContent = "-";
       return;
     }
-    const out = await apiJsonp({ action:"personTotal", name });
+
+    let out;
+    try{
+      out = await apiJsonp({ action:"personTotal", name });
+    }catch(e){
+      return;
+    }
+
     if(!out.ok) return;
     document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
     document.getElementById("myTeam").textContent = out.team || "-";
   }
 
-  async function refreshLeaderboard(){
+  // ✅ leaderboard 한 번으로: 상단 랭킹 + 최근탭 팀누적(테스트) 같이 갱신
+  async function refreshLeaderboardAndTeamTotals(){
     const hint = document.getElementById("sumHint");
     hint.textContent = "불러오는 중...";
 
-    const out = await apiJsonp({ action:"leaderboard" });
-    if(!out.ok){
-      hint.textContent = "랭킹 불러오기 실패";
+    let out;
+    try{
+      out = await apiJsonp({ action:"leaderboard" });
+    }catch(e){
+      hint.textContent = "불러오기 실패";
       return;
     }
 
+    if(!out.ok){
+      hint.textContent = "불러오기 실패";
+      return;
+    }
+
+    // 상단 팀랭킹
     const ranks = out.teamRanks || [];
     document.getElementById("teamRankLine").textContent =
       ranks.map((x,i)=> `${i+1}위 ${x.team}`).join(" / ") || "-";
     document.getElementById("bestTeamTotal").textContent =
       ranks[0] ? `${ranks[0].team} : ${fmtKm(ranks[0].total)}` : "-";
 
+    // TOP10
     const top10 = out.top10 || [];
     const box = document.getElementById("top10Box");
     box.innerHTML = top10.length
@@ -539,11 +384,23 @@
       `).join("")
       : `<div class="rankRow"><div class="mono">-</div><div>데이터 없음</div><div class="right mono">-</div></div>`;
 
+    // ✅ 최근탭 팀 누적(테스트용)
+    const tt = out.teamTotals || {};
+    const pillBox = document.getElementById("teamTotalsPills");
+    if (pillBox){
+      pillBox.innerHTML = `
+        <span class="pill pillDark">R : ${fmtKm(tt.R || 0)}</span>
+        <span class="pill pillDark">N : ${fmtKm(tt.N || 0)}</span>
+        <span class="pill pillDark">L : ${fmtKm(tt.L || 0)}</span>
+        <span class="pill pillDark">C : ${fmtKm(tt.C || 0)}</span>
+      `;
+    }
+
     const now = new Date();
     hint.textContent = `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
   }
 
-  // ===== 추가: 최근 인증 기록(탭 + 필터) =====
+  // ===== 최근 인증 기록(탭 + 필터) =====
   let recentRows = [];
   const recentFilter = { myTeam:false, myName:false, today:false };
 
@@ -588,16 +445,21 @@
   }
 
   function fmtRecentRow(r){
-    const date = escapeHtml(String(r.date || "").slice(0,16)); // yyyy-MM-dd HH:mm
+    const date = escapeHtml(String(r.date || "").slice(0,16));
     const name = escapeHtml(r.name || "");
     const team = escapeHtml(r.team || "-");
-    const km = fmtKm(r.distance || 0);
-    const extra = (r.counted === false) ? `<span class="pill">집계 제외</span>` : "";
+    const dist = Number(r.distance) || 0;
+    const eff = Number(r.effectiveDistance) || 0;
+    const capped = !!r.capped;
+
+    const rightText = capped ? `${eff} / ${dist}` : `${dist}`;
+    const badge = capped ? `<span class="pill pillWarn">200 캡</span>` : "";
+
     return `
       <div class="rankRow" style="grid-template-columns:140px 1fr 120px;">
         <div class="mono">${date}</div>
-        <div>${name} <span class="pill">${team}팀</span> ${extra}</div>
-        <div class="right mono">${km}</div>
+        <div>${name} <span class="pill">${team}팀</span> ${badge}</div>
+        <div class="right mono">${escapeHtml(rightText)}km</div>
       </div>
     `;
   }
@@ -610,13 +472,14 @@
     return rows.filter(r => {
       if(recentFilter.myTeam && teamNow && String(r.team||"") !== teamNow) return false;
       if(recentFilter.myName && nameNow && String(r.name||"") !== nameNow) return false;
-      if(recentFilter.today){
-        const t = Number(r.ts);
-        if(!Number.isFinite(t)) return false;           // ts 없으면 제외
-        const d2 = ymdLocal(new Date(t));               // ts로 날짜 계산
-        if(d2 !== todayStr) return false;
-  }
 
+      // ✅ 오늘 필터는 date 문자열이 아니라 ts로 판정(포맷 흔들림 방지)
+      if(recentFilter.today){
+        const t = Number(String(r.ts).replaceAll(",", ""));
+        if(!Number.isFinite(t)) return false;
+        const d2 = ymdLocal(new Date(t));
+        if(d2 !== todayStr) return false;
+      }
       return true;
     });
   }
@@ -627,8 +490,8 @@
 
     let out;
     try{
-      // 필터 정확도 위해 100개까지 가져오고, 화면에는 최대 10개만 표시
-      out = await apiJsonp({ action:"recentEntries", limit:"100" });
+      // 필터 안정성 위해 200개까지 받아놓고 화면은 10개만 표시
+      out = await apiJsonp({ action:"recentEntries", limit:"200" });
     }catch(e){
       box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>최근 기록 불러오기 실패</div><div class="right mono">-</div></div>`;
       return;
@@ -683,9 +546,8 @@
 
   // 초기 실행
   initTabsAndFilters();
-  refreshLeaderboard();
+  refreshLeaderboardAndTeamTotals();
   refreshRecent();
 </script>
 </body>
 </html>
-
