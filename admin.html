@@ -1,321 +1,59 @@
 <!doctype html>
-<html lang="ko">
+<html>
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>RNLC 관리자</title>
-  <style>
-    :root{ --b:#111; --muted:#666; --line:#eee; --radius:16px; }
-    *{ box-sizing:border-box; }
-    body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#fff; color:#111; }
-    .wrap{ width:min(980px, 92vw); margin:0 auto; padding:18px 0 44px; }
-    h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:28px; }
-    .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; padding:14px; }
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .input{ height:48px; border:2px solid var(--b); border-radius:12px; padding:10px 12px; font-size:15px; outline:none; }
-    .btn{ height:48px; border:2px solid var(--b); border-radius:12px; background:#fff; font-size:15px; font-weight:900; cursor:pointer; padding:0 14px; }
-    .btn.danger{ border-color:#c00; color:#c00; }
-    .btn.mini{ height:36px; font-size:13px; padding:0 10px; border-radius:10px; }
-    .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
-    .section{ margin-top:14px; }
-    h2{ margin:12px 0 10px; font-size:16px; font-weight:900; }
-
-    table{ width:100%; border-collapse:collapse; font-size:13px; }
-    th, td{ border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; vertical-align:middle; }
-    th{ font-weight:900; background:#fafafa; }
-    .mono{ font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
-    .right{ text-align:right; }
-    .pill{ display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
-    .actions{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-
-    .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.25); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
-    .toast{ width:min(440px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
-    .toastTitle{ font-size:18px; font-weight:1000; margin:4px 0 8px; }
-    .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
-    .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
-
-    @media (max-width: 720px){
-      th:nth-child(6), td:nth-child(6), th:nth-child(7), td:nth-child(7){ display:none; } /* note/count 일부 숨김 */
-    }
-  </style>
+<meta charset="utf-8"/>
+<title>관리자</title>
 </head>
-
 <body>
-<div class="wrap">
-  <h1>RNLC 관리자</h1>
 
-  <div class="card">
-    <div class="row">
-      <input id="pass" class="input" style="width:220px" placeholder="관리자 비밀번호(pass)"/>
-      <button class="btn" id="btnLoad">불러오기</button>
-      <button class="btn" id="btnRebuild">캐시 재계산</button>
-      <a class="btn" href="./index.html" style="text-decoration:none; color:#111; display:inline-flex; align-items:center;">← 메인</a>
-    </div>
-    <div class="hint">
-      * 비밀번호는 스프레드시트의 <b>admin</b> 시트 <b>A1</b> 값입니다.
-    </div>
-  </div>
+<h2>RNLC 관리자</h2>
 
-  <div class="section card">
-    <h2>명단(DB)</h2>
-    <div class="row" style="margin-bottom:10px;">
-      <input id="moveName" class="input" style="width:220px" placeholder="이동할 이름"/>
-      <select id="toTeam" class="input" style="width:120px">
-        <option value="R">R</option>
-        <option value="N">N</option>
-        <option value="L">L</option>
-        <option value="C">C</option>
-      </select>
-      <button class="btn" id="btnMove">팀 이동</button>
-      <span class="hint">* DB 시트(B/D/F/H) 배정 수정</span>
-    </div>
-    <div id="rosterBox" class="hint">불러오기 전</div>
-  </div>
+<input id="pass" placeholder="비밀번호"/>
+<input id="month" placeholder="YYYY-MM"/>
+<button onclick="setMonth()">월 변경</button>
 
-  <div class="section card">
-    <div class="row" style="justify-content:space-between; align-items:baseline;">
-      <h2 style="margin:0;">기록(entries)</h2>
-      <div class="hint">* [수정]은 거리만 변경 / [삭제]는 행 삭제</div>
-    </div>
-
-    <div class="row" style="margin:10px 0 8px;">
-      <input id="filterName" class="input" style="width:200px" placeholder="이름 필터(선택)"/>
-      <button class="btn" id="btnFilter" style="height:48px;">필터 적용</button>
-      <button class="btn" id="btnClear" style="height:48px;">필터 해제</button>
-    </div>
-
-    <div style="overflow:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th class="mono">ts</th>
-            <th>date</th>
-            <th>name</th>
-            <th>team</th>
-            <th class="right">km</th>
-            <th>counted</th>
-            <th>note</th>
-            <th class="right">관리</th>
-          </tr>
-        </thead>
-        <tbody id="entriesBody">
-          <tr><td colspan="8" class="hint">불러오기 전</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<div class="toastMask" id="toastMask">
-  <div class="toast">
-    <div class="toastTitle" id="toastTitle">안내</div>
-    <div class="toastBody" id="toastBody"></div>
-    <button class="toastBtn" id="toastBtn">확인</button>
-  </div>
-</div>
+<h3>기록</h3>
+<div id="list"></div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
-  let allEntries = [];
+const SCRIPT_URL="여기에_웹앱_exec_URL";
 
-  function showPopup(title, body){
-    document.getElementById("toastTitle").textContent = title || "안내";
-    document.getElementById("toastBody").textContent = body || "";
-    document.getElementById("toastMask").style.display = "flex";
-  }
-  function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
-  document.getElementById("toastBtn").addEventListener("click", hidePopup);
-  document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
-
-  function apiJsonp(params){
-    return new Promise((resolve, reject) => {
-      const cb = "cb_" + Math.random().toString(36).slice(2);
-      params.callback = cb;
-
-      const url = new URL(SCRIPT_URL);
-      Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-
-      const script = document.createElement("script");
-      window[cb] = (data) => { cleanup(); resolve(data); };
-      script.onerror = () => { cleanup(); reject(new Error("JSONP load error")); };
-      script.src = url.toString();
-      document.body.appendChild(script);
-
-      function cleanup(){
-        try{ delete window[cb]; }catch(e){}
-        script.remove();
-      }
-    });
-  }
-
-  function passValue(){ return document.getElementById("pass").value.trim(); }
-
-  function renderRoster(roster){
-    // roster는 [{name, team}] 배열로 오므로 team별로 묶기
-    const grouped = { R:[], N:[], L:[], C:[] };
-    (roster || []).forEach(x=>{
-      const t = String(x.team||'').trim();
-      const n = String(x.name||'').trim();
-      if(grouped[t] && n) grouped[t].push(n);
-    });
-
-    const teams = ["R","N","L","C"];
-    const html = teams.map(t=>{
-      const list = (grouped[t] || []).map(n=>`<span class="pill">${n}</span>`).join(" ");
-      return `<div style="margin:8px 0;"><b>${t}팀</b> (${(grouped[t]||[]).length}명)
-        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${list || "<span class='hint'>-</span>"}</div>
-      </div>`;
-    }).join("");
-    document.getElementById("rosterBox").innerHTML = html;
-  }
-
-  function renderEntries(rows){
-    const body = document.getElementById("entriesBody");
-    if(!rows || !rows.length){
-      body.innerHTML = `<tr><td colspan="8" class="hint">데이터 없음</td></tr>`;
-      return;
-    }
-    rows.sort((a,b)=> (b.ts||0) - (a.ts||0));
-
-    body.innerHTML = rows.slice(0, 400).map(r=>`
-      <tr>
-        <td class="mono">${r.ts||""}</td>
-        <td>${r.date||""}</td>
-        <td>${r.name||""}</td>
-        <td>${r.team||""}</td>
-        <td class="right mono">${(r.distance||0).toString()}</td>
-        <td>${String(r.counted)}</td>
-        <td class="mono">${r.note||""}</td>
-        <td class="right">
-          <div class="actions">
-            <button class="btn mini" onclick="editEntry(${r.ts}, ${r.distance})">수정</button>
-            <button class="btn mini danger" onclick="deleteEntry(${r.ts})">삭제</button>
-          </div>
-        </td>
-      </tr>
-    `).join("");
-  }
-
-  function applyFilter(){
-    const q = document.getElementById("filterName").value.trim();
-    if(!q) return renderEntries(allEntries);
-    renderEntries(allEntries.filter(x => String(x.name||'').includes(q)));
-  }
-
-  async function loadAll(){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-
-    try{
-      const [roster, entries] = await Promise.all([
-        apiJsonp({ action:"roster", pass }),
-        apiJsonp({ action:"entriesList", pass }),
-      ]);
-
-      if(!roster.ok) return showPopup("오류", roster.error || "roster 실패");
-      if(!entries.ok) return showPopup("오류", entries.error || "entries 실패");
-
-      renderRoster(roster.roster);
-      allEntries = entries.rows || [];
-      applyFilter();
-
-      showPopup("완료", "관리자 데이터 불러오기 완료");
-    }catch(err){
-      showPopup("오류", String(err && err.message ? err.message : err));
-    }
-  }
-
-  async function move(){
-    const pass = passValue();
-    const name = document.getElementById("moveName").value.trim();
-    const toTeam = document.getElementById("toTeam").value;
-
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-    if(!name) return showPopup("확인", "이동할 이름을 입력하세요.");
-
-    try{
-      const out = await apiJsonp({ action:"move", pass, name, toTeam });
-      if(!out.ok) return showPopup("오류", out.error || "팀 이동 실패");
-
-      await loadAll();
-    }catch(err){
-      showPopup("오류", String(err && err.message ? err.message : err));
-    }
-  }
-
-  // ✅ 캐시 재계산 버튼
-  async function rebuildCache(){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-
-    const ok = confirm("캐시를 재계산할까요?\n(기록이 많으면 수 초~수십 초 걸릴 수 있습니다)");
-    if(!ok) return;
-
-    showPopup("진행중", "캐시 재계산 중입니다...\n잠시만 기다려 주세요.");
-
-    try{
-      const out = await apiJsonp({ action:"rebuildCache", pass });
-      if(!out || !out.ok) return showPopup("오류", (out && out.error) ? out.error : "rebuildCache 실패");
-
-      showPopup("완료", "캐시 재계산 완료!\n관리자 데이터를 다시 불러옵니다.");
-      await loadAll();
-    }catch(err){
-      showPopup("오류", String(err && err.message ? err.message : err));
-    }
-  }
-
-  // ✅ 수정: distance만 변경
-  async function editEntry(ts, oldDistance){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-
-    const v = prompt("새 거리(km)를 입력하세요.", String(oldDistance));
-    if(v === null) return;
-    const n = Number(String(v).trim().replace(",", "."));
-    if(!Number.isFinite(n) || n <= 0) return showPopup("확인", "거리 값이 올바르지 않습니다.");
-
-    try{
-      const out = await apiJsonp({ action:"editEntry", pass, ts: String(ts), distance: String(n) });
-      if(!out.ok) return showPopup("오류", out.error || "수정 실패");
-
-      showPopup("완료", `수정되었습니다.\nTS: ${ts}\n거리: ${n}km\n\n※ 수정/삭제 후 통계가 달라지면 [캐시 재계산]을 눌러주세요.`);
-      await loadAll();
-    }catch(err){
-      showPopup("오류", String(err && err.message ? err.message : err));
-    }
-  }
-
-  // ✅ 삭제
-  async function deleteEntry(ts){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-
-    const ok = confirm(`정말 삭제할까요?\nTS: ${ts}\n(되돌릴 수 없습니다)`);
-    if(!ok) return;
-
-    try{
-      const out = await apiJsonp({ action:"deleteEntry", pass, ts: String(ts) });
-      if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
-
-      showPopup("완료", `삭제되었습니다.\nTS: ${ts}\n\n※ 통계가 달라지면 [캐시 재계산]을 눌러주세요.`);
-      await loadAll();
-    }catch(err){
-      showPopup("오류", String(err && err.message ? err.message : err));
-    }
-  }
-
-  // 전역 노출(인라인 onclick용)
-  window.editEntry = editEntry;
-  window.deleteEntry = deleteEntry;
-
-  document.getElementById("btnLoad").addEventListener("click", loadAll);
-  document.getElementById("btnRebuild").addEventListener("click", rebuildCache);
-  document.getElementById("btnMove").addEventListener("click", move);
-  document.getElementById("btnFilter").addEventListener("click", applyFilter);
-  document.getElementById("btnClear").addEventListener("click", ()=>{
-    document.getElementById("filterName").value = "";
-    applyFilter();
+function api(params){
+  return new Promise((res,rej)=>{
+    const cb="cb_"+Math.random().toString(36).slice(2);
+    params.callback=cb;
+    const url=new URL(SCRIPT_URL);
+    Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+    const s=document.createElement("script");
+    window[cb]=(d)=>{delete window[cb];s.remove();res(d)};
+    s.onerror=()=>rej();
+    s.src=url;
+    document.body.appendChild(s);
   });
+}
+
+async function load(){
+  const pass=document.getElementById("pass").value;
+  const out=await api({action:"entriesList",pass});
+  if(!out.ok) return alert(out.error);
+  document.getElementById("list").innerHTML=
+    out.rows.map(r=>`<div>${r.date} ${r.name} ${r.distance}km 
+      <button onclick="del(${r.ts})">삭제</button></div>`).join("");
+}
+
+async function del(ts){
+  const pass=document.getElementById("pass").value;
+  await api({action:"deleteEntry",pass,ts});
+  load();
+}
+
+async function setMonth(){
+  const pass=document.getElementById("pass").value;
+  const month=document.getElementById("month").value;
+  const out=await api({action:"setMonth",pass,month});
+  if(out.ok) alert("월 변경 완료");
+}
+
 </script>
 </body>
 </html>
