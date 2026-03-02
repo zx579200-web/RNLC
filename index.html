@@ -159,6 +159,13 @@
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
   const COOLDOWN_SECONDS = 60;
 
+  let activeMonth = null;
+  let recentRows = [];
+  const recentFilter = { myName:false, today:false };
+
+  let submitLockUntil = 0;
+  let submitTimer = null;
+
   function parseKm(v){
     const n = Number(String(v||"").trim().replace(",", "."));
     return Number.isFinite(n) ? n : NaN;
@@ -226,15 +233,6 @@
     });
   }
 
-  // state
-  let activeMonth = null;
-  let recentRows = [];
-  const recentFilter = { myName:false, today:false };
-
-  // cooldown lock
-  let submitLockUntil = 0;
-  let submitTimer = null;
-
   function lockSubmitButton(seconds){
     const btn = document.getElementById("submitBtn");
     const baseText = "입력 완료";
@@ -301,6 +299,7 @@
     const xAt = (i)=> series.length===1 ? (x0+x1)/2 : x0 + (x1-x0)*(i/(series.length-1));
     const yAt = (v)=> y0 - (y0-y1)*((v-minY)/(maxY-minY));
 
+    // line
     ctx.strokeStyle="#111";
     ctx.lineWidth=2*devicePixelRatio;
     ctx.beginPath();
@@ -309,6 +308,15 @@
       if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     });
     ctx.stroke();
+
+    // ✅ 마지막 점 표시(1개 데이터도 보이게)
+    const last = series[series.length-1];
+    const lx = xAt(series.length-1);
+    const ly = yAt(last.total||0);
+    ctx.fillStyle = "#111";
+    ctx.beginPath();
+    ctx.arc(lx, ly, 3.5*devicePixelRatio, 0, Math.PI*2);
+    ctx.fill();
   }
 
   async function loadStatus(){
@@ -369,7 +377,7 @@
       }
 
       let msg = `${out.data}\n${out.name}\n입력: ${out.distance}km`;
-      if(typeof out.effectiveDistance === "number") msg += `\n집계 반영: ${out.effectiveDistance}km`;
+      msg += `\n집계 반영: ${out.effectiveDistance}km`;
       if(out.capped) msg += `\n※ 200km 초과분은 집계 제외(월 200km까지만 반영)`;
       showPopup("완료", msg);
 
@@ -386,7 +394,7 @@
     hint.textContent = "불러오는 중...";
 
     try{
-      const out = await apiJsonp({ action:"leaderboard", monthKey: activeMonth });
+      const out = await apiJsonp({ action:"leaderboard" });
       if(!out.ok){
         hint.textContent = "불러오기 실패";
         return;
@@ -426,7 +434,7 @@
       return;
     }
     try{
-      const out = await apiJsonp({ action:"personTotal", name, monthKey: activeMonth });
+      const out = await apiJsonp({ action:"personTotal", name });
       if(!out.ok) return;
       document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
       document.getElementById("myRank").textContent = out.rank ? `${out.rank}위` : "-";
@@ -436,7 +444,7 @@
   async function refreshRecent(){
     const box = document.getElementById("recentBox");
     try{
-      const out = await apiJsonp({ action:"recentEntries", monthKey: activeMonth, limit:"200" });
+      const out = await apiJsonp({ action:"recentEntries", limit:"200" });
       if(!out.ok){
         box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>불러오기 실패</div><div class="right mono">-</div></div>`;
         return;
@@ -456,7 +464,6 @@
     const filtered = recentRows.filter(r=>{
       if(recentFilter.myName && nameNow && String(r.name||"") !== nameNow) return false;
       if(recentFilter.today){
-        // counted(yyyy-MM-dd) 기준 (서버가 TZ=Asia/Tokyo로 저장)
         if(String(r.counted||"").trim() !== todayStr) return false;
       }
       return true;
@@ -488,7 +495,7 @@
       return;
     }
     try{
-      const out = await apiJsonp({ action:"personDailySeries", name, monthKey: activeMonth });
+      const out = await apiJsonp({ action:"personDailySeries", name });
       if(!out.ok){
         drawChart([]);
         document.getElementById("chartHint").textContent = "불러오기 실패";
@@ -535,7 +542,6 @@
       else if(id==="distance") submit();
     });
 
-    // initial
     loadStatus().then(refreshAll);
   }
 
