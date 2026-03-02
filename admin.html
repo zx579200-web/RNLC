@@ -16,10 +16,9 @@
     .btn{ height:48px; border:2px solid var(--b); border-radius:12px; background:#fff; font-size:15px; font-weight:900; cursor:pointer; padding:0 14px; }
     .btn.danger{ border-color:#c00; color:#c00; }
     .btn.mini{ height:36px; font-size:13px; padding:0 10px; border-radius:10px; }
-    .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
+    .hint{ font-size:12px; color:var(--muted); margin-top:8px; white-space:pre-line; }
     .section{ margin-top:14px; }
     h2{ margin:12px 0 10px; font-size:16px; font-weight:900; }
-
     table{ width:100%; border-collapse:collapse; font-size:13px; }
     th, td{ border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; vertical-align:middle; }
     th{ font-weight:900; background:#fafafa; }
@@ -27,16 +26,11 @@
     .right{ text-align:right; }
     .pill{ display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
     .actions{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-
     .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.25); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
     .toast{ width:min(460px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
     .toastTitle{ font-size:18px; font-weight:1000; margin:4px 0 8px; }
     .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
     .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
-
-    @media (max-width: 720px){
-      th:nth-child(6), td:nth-child(6), th:nth-child(7), td:nth-child(7){ display:none; } /* note/count 일부 숨김 */
-    }
   </style>
 </head>
 
@@ -49,17 +43,26 @@
       <input id="pass" class="input" style="width:220px" placeholder="관리자 비밀번호(pass)"/>
       <button class="btn" id="btnLoad">불러오기</button>
       <button class="btn" id="btnRebuild">캐시 재계산</button>
-      <button class="btn danger" id="btnMonthReset">월간 리셋</button>
+      <button class="btn danger" id="btnMonthlyReset">월간 리셋(아카이브)</button>
       <a class="btn" href="./index.html" style="text-decoration:none; color:#111; display:inline-flex; align-items:center;">← 메인</a>
     </div>
     <div class="hint">
-      * 비밀번호는 스프레드시트의 <b>admin</b> 시트 <b>A1</b> 값입니다.<br/>
-      * <b>월간 리셋</b>은 캐시(user_totals_v2, stats_v2)만 초기화합니다. entries(원본 기록)는 삭제하지 않습니다.
+      * 비밀번호는 스프레드시트의 <b>admin</b> 시트 <b>A1</b> 값입니다.
+      * 월간 리셋: <b>당월을 totals_YYYY-MM / daily_YYYY-MM / stats_YYYY-MM</b>로 보관 후, 활성 월을 다음달로 전환합니다.
     </div>
   </div>
 
   <div class="section card">
-    <h2>명단(DB)</h2>
+    <h2>사전등록자(DB)</h2>
+    <div class="row" style="margin-bottom:10px;">
+      <input id="pName" class="input" style="width:240px" placeholder="등록/삭제할 이름"/>
+      <button class="btn" id="btnAdd">등록</button>
+      <button class="btn danger" id="btnRemove">삭제(A열)</button>
+    </div>
+    <div class="hint">
+      * DB 시트 <b>A열(A2~)</b>에 이름을 넣으면 사전등록자입니다.
+      * 기존 RNLC 팀명단(B/D/F/H)에 있던 이름도 등록자로 인정됩니다(호환).
+    </div>
     <div id="rosterBox" class="hint">불러오기 전</div>
   </div>
 
@@ -83,13 +86,14 @@
             <th>date</th>
             <th>name</th>
             <th class="right">km</th>
+            <th class="right">eff</th>
             <th>counted</th>
             <th>note</th>
             <th class="right">관리</th>
           </tr>
         </thead>
         <tbody id="entriesBody">
-          <tr><td colspan="7" class="hint">불러오기 전</td></tr>
+          <tr><td colspan="8" class="hint">불러오기 전</td></tr>
         </tbody>
       </table>
     </div>
@@ -105,7 +109,8 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
+  // ✅ 네 /exec URL로 변경
+  const SCRIPT_URL = "PUT_YOUR_SCRIPT_URL_HERE";
   let allEntries = [];
 
   function showPopup(title, body){
@@ -139,41 +144,34 @@
   }
 
   function passValue(){ return document.getElementById("pass").value.trim(); }
+  function pName(){ return document.getElementById("pName").value.trim(); }
 
   function renderRoster(roster){
-    const grouped = {};
-    (roster || []).forEach(x=>{
-      const t = String(x.team||'').trim() || '-';
-      const n = String(x.name||'').trim();
-      if(!n) return;
-      grouped[t] = grouped[t] || [];
-      grouped[t].push(n);
-    });
-
-    const keys = Object.keys(grouped).sort();
-    const html = keys.map(t=>{
-      const list = (grouped[t] || []).map(n=>`<span class="pill">${n}</span>`).join(" ");
-      return `<div style="margin:8px 0;"><b>${t}</b> (${(grouped[t]||[]).length}명)
-        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${list || "<span class='hint'>-</span>"}</div>
-      </div>`;
-    }).join("");
-    document.getElementById("rosterBox").innerHTML = html || "<span class='hint'>-</span>";
+    const list = (roster || []).map(x=> String(x.name||'').trim()).filter(Boolean);
+    const html = `
+      <div><b>등록자</b> (${list.length}명)</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        ${list.map(n=>`<span class="pill">${n}</span>`).join("") || "<span class='hint'>-</span>"}
+      </div>
+    `;
+    document.getElementById("rosterBox").innerHTML = html;
   }
 
   function renderEntries(rows){
     const body = document.getElementById("entriesBody");
     if(!rows || !rows.length){
-      body.innerHTML = `<tr><td colspan="7" class="hint">데이터 없음</td></tr>`;
+      body.innerHTML = `<tr><td colspan="8" class="hint">데이터 없음</td></tr>`;
       return;
     }
     rows.sort((a,b)=> (b.ts||0) - (a.ts||0));
 
-    body.innerHTML = rows.slice(0, 500).map(r=>`
+    body.innerHTML = rows.slice(0, 400).map(r=>`
       <tr>
         <td class="mono">${r.ts||""}</td>
         <td>${r.date||""}</td>
         <td>${r.name||""}</td>
         <td class="right mono">${(r.distance||0).toString()}</td>
+        <td class="right mono">${(r.effectiveDistance===null || r.effectiveDistance===undefined) ? "" : String(r.effectiveDistance)}</td>
         <td>${String(r.counted)}</td>
         <td class="mono">${r.note||""}</td>
         <td class="right">
@@ -199,13 +197,14 @@
     try{
       const [roster, entries] = await Promise.all([
         apiJsonp({ action:"roster", pass }),
-        apiJsonp({ action:"entriesList", pass }),
+        apiJsonp({ action:"recentEntries", pass, limit:"400" }) // 최근 400
       ]);
 
       if(!roster.ok) return showPopup("오류", roster.error || "roster 실패");
       if(!entries.ok) return showPopup("오류", entries.error || "entries 실패");
 
       renderRoster(roster.roster);
+
       allEntries = entries.rows || [];
       applyFilter();
 
@@ -215,89 +214,88 @@
     }
   }
 
+  async function addP(){
+    const pass = passValue();
+    const name = pName();
+    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
+    if(!name) return showPopup("확인", "이름을 입력하세요.");
+
+    try{
+      const out = await apiJsonp({ action:"addParticipant", pass, name });
+      if(!out.ok) return showPopup("오류", out.error || "등록 실패");
+      await loadAll();
+    }catch(err){
+      showPopup("오류", String(err && err.message ? err.message : err));
+    }
+  }
+
+  async function removeP(){
+    const pass = passValue();
+    const name = pName();
+    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
+    if(!name) return showPopup("확인", "이름을 입력하세요.");
+
+    const ok = confirm(`DB(A열)에서 삭제할까요?\n이름: ${name}\n(기존 팀명단(B/D/F/H)은 건드리지 않습니다)`);
+    if(!ok) return;
+
+    try{
+      const out = await apiJsonp({ action:"removeParticipant", pass, name });
+      if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
+      await loadAll();
+    }catch(err){
+      showPopup("오류", String(err && err.message ? err.message : err));
+    }
+  }
+
   async function rebuildCache(){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
 
-    const ok = confirm("캐시를 재계산할까요?\n(기록이 많으면 수 초~수십 초 걸릴 수 있습니다)");
+    const ok = confirm("활성 월 캐시를 재계산할까요?");
     if(!ok) return;
 
-    showPopup("진행중", "캐시 재계산 중입니다...\n잠시만 기다려 주세요.");
+    showPopup("진행중", "캐시 재계산 중입니다...");
 
     try{
       const out = await apiJsonp({ action:"rebuildCache", pass });
       if(!out || !out.ok) return showPopup("오류", (out && out.error) ? out.error : "rebuildCache 실패");
-
-      showPopup("완료", "캐시 재계산 완료!\n관리자 데이터를 다시 불러옵니다.");
-      await loadAll();
+      showPopup("완료", `캐시 재계산 완료\n월: ${out.monthKey}\n참가자: ${out.count}명`);
     }catch(err){
       showPopup("오류", String(err && err.message ? err.message : err));
     }
   }
 
-  async function monthReset(){
+  async function monthlyReset(){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
 
-    const ok = confirm("월간 리셋을 실행할까요?\n- 캐시만 초기화\n- entries 원본 기록은 유지\n\n※ 리셋 후 메인 화면에서 누계를 다시 보기 전, 캐시 재계산을 추천합니다.");
+    const ok = confirm("월간 리셋을 실행할까요?\n- 당월을 아카이브 시트로 보관\n- 활성 월을 다음달로 전환\n(되돌리기 어려움)");
     if(!ok) return;
 
-    showPopup("진행중", "월간 리셋 중입니다...");
+    showPopup("진행중", "월간 리셋(아카이브) 실행 중...");
 
     try{
-      const out = await apiJsonp({ action:"monthReset", pass });
-      if(!out || !out.ok) return showPopup("오류", (out && out.error) ? out.error : "monthReset 실패");
-      showPopup("완료", "월간 리셋 완료!\n이어서 캐시 재계산을 수행합니다.");
-      await rebuildCache();
-    }catch(err){
-      showPopup("오류", String(err && err.message ? err.message : err));
-    }
-  }
+      const out = await apiJsonp({ action:"monthlyReset", pass });
+      if(!out || !out.ok) return showPopup("오류", (out && out.error) ? out.error : "monthlyReset 실패");
 
-  async function editEntry(ts, oldDistance){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-
-    const v = prompt("새 거리(km)를 입력하세요.", String(oldDistance));
-    if(v === null) return;
-    const n = Number(String(v).trim().replace(",", "."));
-    if(!Number.isFinite(n) || n <= 0) return showPopup("확인", "거리 값이 올바르지 않습니다.");
-
-    try{
-      const out = await apiJsonp({ action:"editEntry", pass, ts: String(ts), distance: String(n) });
-      if(!out.ok) return showPopup("오류", out.error || "수정 실패");
-
-      showPopup("완료", `수정되었습니다.\nTS: ${ts}\n거리: ${n}km\n\n※ 수정/삭제 후 통계가 달라지면 [캐시 재계산]을 눌러주세요.`);
+      showPopup("완료", `아카이브 완료: ${out.archivedMonth}\n새 활성 월: ${out.newActiveMonth}\n\n메인 화면에서 월 선택으로 추이를 조회할 수 있습니다.`);
       await loadAll();
     }catch(err){
       showPopup("오류", String(err && err.message ? err.message : err));
     }
   }
 
-  async function deleteEntry(ts){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-
-    const ok = confirm(`정말 삭제할까요?\nTS: ${ts}\n(되돌릴 수 없습니다)`);
-    if(!ok) return;
-
-    try{
-      const out = await apiJsonp({ action:"deleteEntry", pass, ts: String(ts) });
-      if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
-
-      showPopup("완료", `삭제되었습니다.\nTS: ${ts}\n\n※ 통계가 달라지면 [캐시 재계산]을 눌러주세요.`);
-      await loadAll();
-    }catch(err){
-      showPopup("오류", String(err && err.message ? err.message : err));
-    }
-  }
-
-  window.editEntry = editEntry;
-  window.deleteEntry = deleteEntry;
+  // 전역 (수정/삭제는 여기서 제외: 간단 운영 원하면 code.gs에 edit/delete 다시 붙여야 함)
+  // 이번 버전은 월간/등록자 중심이라 entries 수정/삭제 기능은 생략했다.
+  window.editEntry = ()=> showPopup("안내", "이 버전에서는 entries 수정/삭제 API를 포함하지 않았습니다.\n필요하면 다시 붙여드릴게요.");
+  window.deleteEntry = ()=> showPopup("안내", "이 버전에서는 entries 수정/삭제 API를 포함하지 않았습니다.\n필요하면 다시 붙여드릴게요.");
 
   document.getElementById("btnLoad").addEventListener("click", loadAll);
   document.getElementById("btnRebuild").addEventListener("click", rebuildCache);
-  document.getElementById("btnMonthReset").addEventListener("click", monthReset);
+  document.getElementById("btnMonthlyReset").addEventListener("click", monthlyReset);
+  document.getElementById("btnAdd").addEventListener("click", addP);
+  document.getElementById("btnRemove").addEventListener("click", removeP);
+
   document.getElementById("btnFilter").addEventListener("click", applyFilter);
   document.getElementById("btnClear").addEventListener("click", ()=>{
     document.getElementById("filterName").value = "";
