@@ -60,7 +60,7 @@
     .adminBtn{ text-decoration:none; font-weight:900; font-size:13px; color:#111; border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; }
 
     .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; padding:14px; }
-    .toast{ background:#fff; border-radius:18px; width:min(440px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
+    .toast{ background:#fff; border-radius:18px; width:min(460px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
     .toastTitle{ font-weight:900; font-size:18px; margin:0 0 8px; }
     .toastBody{ margin:0 0 14px; color:#222; white-space:pre-line; line-height:1.35; font-size:14px; }
     .toastBtnRow{ display:flex; justify-content:flex-end; }
@@ -187,7 +187,7 @@
   </div>
 
 <script>
-  // ✅ 네 /exec URL로 변경
+  // ✅ 네 웹앱 /exec URL (고정)
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
   const COOLDOWN_SECONDS = 60;
 
@@ -208,7 +208,7 @@
       .replaceAll("'","&#039;");
   }
 
-  function apiJsonp(params, timeoutMs = 9000){
+  function apiJsonp(params, timeoutMs = 12000){
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
       params.callback = cb;
@@ -321,13 +321,16 @@
     try{
       out = await apiJsonp({ action:"status" });
     }catch(e){
-      showPopup("오류", "상태 불러오기 실패(네트워크/URL).");
-      return;
+      const testUrl = `${SCRIPT_URL}?action=status&callback=cb`;
+      showPopup("오류", `상태 불러오기 실패(네트워크/URL/권한).\n\n1) 브라우저 주소창에서 아래 URL이 cb({...}); 형태로 뜨는지 확인하세요.\n${testUrl}\n\n2) Apps Script 배포 설정: Web app / Execute as: Me / Who has access: Anyone`);
+      return false;
     }
+
     if(!out.ok){
       showPopup("오류", out.error || "status 실패");
-      return;
+      return false;
     }
+
     activeMonth = out.activeMonth;
     months = out.months || [];
     if(!selectedMonth) selectedMonth = activeMonth;
@@ -337,6 +340,7 @@
     sel.value = selectedMonth;
 
     updateModeHint();
+    return true;
   }
 
   async function checkName(){
@@ -347,7 +351,7 @@
     try{
       out = await apiJsonp({ action:"checkName", name });
     }catch(e){
-      return showPopup("오류", "확인 실패(네트워크/URL).");
+      return showPopup("오류", "확인 실패(네트워크/권한/URL).");
     }
 
     if(!out.ok) return showPopup("오류", out.error || "checkName 실패");
@@ -418,9 +422,7 @@
       if(!out.ok) return;
       document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
       document.getElementById("myRank").textContent = (out.rank ? `${out.rank}위` : "-");
-    }catch(e){
-      // ignore
-    }
+    }catch(e){}
   }
 
   async function refreshLeaderboard(){
@@ -440,16 +442,13 @@
       return;
     }
 
-    // best
     document.getElementById("bestTotal").textContent = out.best ? fmtKm(out.best.total) : "-";
 
-    // top3 line
     const top3 = out.top3 || [];
     document.getElementById("top3Line").innerHTML = top3.length
       ? top3.map((p,i)=> `<span class="pill pillDark">${i+1}위 ${escapeHtml(p.name)} (${escapeHtml(fmtKm(p.total))})</span>`).join(" ")
       : "-";
 
-    // top10
     const top10 = out.top10 || [];
     const box = document.getElementById("top10Box");
     box.innerHTML = top10.length
@@ -564,7 +563,7 @@
       : `<div class="rankRow"><div class="mono">-</div><div>표시할 기록이 없습니다.</div><div class="right mono">-</div></div>`;
   }
 
-  // ===== Chart (canvas) =====
+  // ===== Chart =====
   function drawChart(series){
     const c = document.getElementById("chart");
     const ctx = c.getContext("2d");
@@ -573,14 +572,10 @@
 
     ctx.clearRect(0,0,w,h);
 
-    // axes padding
     const padL = 42*devicePixelRatio, padR = 10*devicePixelRatio, padT = 12*devicePixelRatio, padB = 28*devicePixelRatio;
-
     const maxY = Math.max(200, ...series.map(p=>p.total||0), 1);
     const minY = 0;
 
-    // grid
-    ctx.globalAlpha = 1;
     ctx.lineWidth = 1*devicePixelRatio;
     ctx.strokeStyle = "#e9e9e9";
     const gridN = 4;
@@ -592,7 +587,6 @@
       ctx.stroke();
     }
 
-    // 200 line
     const y200 = padT + (h-padT-padB) * (1 - (200-minY)/(maxY-minY));
     ctx.strokeStyle = "#ddd";
     ctx.setLineDash([6*devicePixelRatio, 6*devicePixelRatio]);
@@ -602,23 +596,18 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // labels (simple)
     ctx.fillStyle = "#777";
     ctx.font = `${12*devicePixelRatio}px ui-monospace, Menlo, monospace`;
     ctx.fillText("200", 6*devicePixelRatio, y200 + 4*devicePixelRatio);
     ctx.fillText(String(Math.round(maxY)), 6*devicePixelRatio, padT + 10*devicePixelRatio);
 
-    // line
     if(series.length <= 0){
       document.getElementById("chartHint").textContent = "데이터 없음";
       return;
     }
     document.getElementById("chartHint").textContent = `${selectedMonth} / ${series.length}일 기록`;
 
-    const x0 = padL;
-    const x1 = w - padR;
-    const y0 = h - padB;
-    const y1 = padT;
+    const x0 = padL, x1 = w - padR, y0 = h - padB, y1 = padT;
 
     function xAt(i){
       if(series.length === 1) return (x0+x1)/2;
@@ -639,7 +628,6 @@
     });
     ctx.stroke();
 
-    // last dot
     const last = series[series.length-1];
     ctx.fillStyle = "#111";
     const lx = xAt(series.length-1);
@@ -658,10 +646,7 @@
 
     try{
       const out = await apiJsonp({ action:"personDailySeries", name, monthKey: selectedMonth });
-      if(!out.ok){
-        drawChart([]);
-        return;
-      }
+      if(!out.ok){ drawChart([]); return; }
       const series = (out.series || []).map(x => ({ date:x.date, total:Number(x.total||0) }));
       drawChart(series);
     }catch(e){
@@ -679,12 +664,8 @@
     const isTop = (tab === "top10");
     document.getElementById("tabTop10").classList.toggle("active", isTop);
     document.getElementById("tabRecent").classList.toggle("active", !isTop);
-    document.getElementById("tabTop10").setAttribute("aria-selected", isTop ? "true" : "false");
-    document.getElementById("tabRecent").setAttribute("aria-selected", isTop ? "false" : "true");
-
     document.getElementById("panelTop10").classList.toggle("active", isTop);
     document.getElementById("panelRecent").classList.toggle("active", !isTop);
-
     if(!isTop) renderRecent();
   }
 
@@ -713,12 +694,13 @@
       else if(id === "distance") submit();
     });
 
-    // initial
-    loadStatus().then(refreshAll);
+    (async ()=>{
+      const ok = await loadStatus();
+      if(ok) await refreshAll();
+    })();
   }
 
   init();
 </script>
 </body>
 </html>
-
