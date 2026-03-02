@@ -41,11 +41,13 @@
     .filterBtn.active{ border-color:#111; background:#111; color:#fff; }
     .bottomBar{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:14px; }
     .adminBtn{ text-decoration:none; font-weight:900; font-size:13px; color:#111; border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; }
+
     .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; padding:14px; }
-    .toast{ background:#fff; border-radius:18px; width:min(440px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
+    .toast{ background:#fff; border-radius:18px; width:min(480px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
     .toastTitle{ font-weight:900; font-size:18px; margin:0 0 8px; }
     .toastBody{ margin:0 0 14px; color:#222; white-space:pre-line; line-height:1.35; font-size:14px; }
-    .toastBtnRow{ display:flex; justify-content:flex-end; }
+    .toastBtnRow{ display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    .miniLink{ font-size:12px; color:#111; border:1px solid var(--line); border-radius:999px; padding:6px 10px; background:#fff; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -61,6 +63,7 @@
           <div class="hint" id="nameHint" style="margin-top:6px;">이름 입력 후 [확인]을 눌러 주세요.</div>
         </div>
         <button class="btn btnSecondary" id="checkBtn">확인</button>
+        <button class="btn btnSecondary" id="diagBtn" title="서버가 어떤 시트를 보고 있는지 진단합니다">진단</button>
       </div>
 
       <div style="height:10px"></div>
@@ -142,9 +145,10 @@
 
 <div class="toastMask" id="toastMask">
   <div class="toast">
-    <div class="toastTitle" id="toastTitle">완료</div>
+    <div class="toastTitle" id="toastTitle">안내</div>
     <div class="toastBody" id="toastBody"></div>
     <div class="toastBtnRow">
+      <button class="miniLink" id="copyLinkBtn" style="display:none;">요청 URL 복사</button>
       <button class="btn btnSecondary" id="toastBtn">닫기</button>
     </div>
   </div>
@@ -159,7 +163,8 @@
     recent: [],
     filters: { myName:false, today:false },
     lockUntil: 0,
-    timer: null
+    timer: null,
+    lastRequestUrl: ""
   };
 
   function apiJsonp(params, timeoutMs = 12000){
@@ -169,6 +174,7 @@
 
       const url = new URL(SCRIPT_URL);
       Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+      state.lastRequestUrl = url.toString();
 
       const script = document.createElement("script");
       let done = false;
@@ -206,14 +212,25 @@
     });
   }
 
-  function showPopup(title, body){
+  function showPopup(title, body, showCopy=false){
     document.getElementById("toastTitle").textContent = title || "안내";
     document.getElementById("toastBody").textContent = body || "";
     document.getElementById("toastMask").style.display = "flex";
+    const copyBtn = document.getElementById("copyLinkBtn");
+    copyBtn.style.display = (showCopy && state.lastRequestUrl) ? "inline-block" : "none";
   }
   function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
   document.getElementById("toastBtn").addEventListener("click", hidePopup);
   document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
+
+  document.getElementById("copyLinkBtn").addEventListener("click", async ()=>{
+    try{
+      await navigator.clipboard.writeText(state.lastRequestUrl);
+      showPopup("복사 완료", "요청 URL이 클립보드에 복사되었습니다.");
+    }catch(e){
+      showPopup("복사 실패", state.lastRequestUrl);
+    }
+  });
 
   function parseKm(v){
     const n = Number(String(v||"").trim().replace(",", "."));
@@ -293,7 +310,6 @@
     });
     ctx.stroke();
 
-    // ✅ 1개 데이터도 보이게 점 표시
     const last = series[series.length-1];
     const lx = xAt(series.length-1);
     const ly = yAt(last.total||0);
@@ -353,13 +369,32 @@
     document.getElementById("modeHint").textContent = `활성 월: ${state.activeMonth} (관리자 운영)`;
   }
 
+  async function diag(){
+    try{
+      const out = await apiJsonp({ action:"diag" });
+      if(!out.ok) return showPopup("진단 실패", out.error || "diag 실패", true);
+
+      const lines = [
+        `Spreadsheet: ${out.spreadsheetName}`,
+        `SpreadsheetId: ${out.spreadsheetId}`,
+        `활성 월: ${out.activeMonth}`,
+        `entries: ${out.entries ? (out.entries.name + ` (lastRow=${out.entries.lastRow})`) : "없음"}`,
+        `DB: ${out.db ? (out.db.name + ` (lastRow=${out.db.lastRow})`) : "없음"}`,
+        `탭 목록: ${Array.isArray(out.sheets) ? out.sheets.join(", ") : "-"}`
+      ];
+      showPopup("진단 결과", lines.join("\n"), true);
+    }catch(e){
+      showPopup("진단 실패", "네트워크/URL 문제일 수 있습니다.", true);
+    }
+  }
+
   async function checkName(){
     const name = document.getElementById("name").value.trim();
     if(!name) return showPopup("확인", "이름을 입력해 주세요.");
 
     try{
       const out = await apiJsonp({ action:"checkName", name });
-      if(!out.ok) return showPopup("오류", out.error || "checkName 실패");
+      if(!out.ok) return showPopup("오류", out.error || "checkName 실패", true);
       const hint = document.getElementById("nameHint");
       if(out.registered){
         hint.textContent = "등록 확인 완료 ✅";
@@ -367,10 +402,10 @@
         document.getElementById("distance").focus();
       }else{
         hint.textContent = "미등록 참가자 ❌ (관리자에게 DB 등록 요청)";
-        showPopup("미등록", "사전등록자만 참가 가능합니다.\n관리자에게 등록 요청해 주세요.");
+        showPopup("미등록", "사전등록자만 참가 가능합니다.\n관리자에게 등록 요청해 주세요.", true);
       }
     }catch(e){
-      showPopup("오류", "확인 실패(네트워크/URL).");
+      showPopup("오류", "확인 실패(네트워크/URL).", true);
     }
   }
 
@@ -391,15 +426,16 @@
       if(!out.ok){
         unlockSubmit();
         if(String(out.error||"").includes("cooldown")){
-          return showPopup("잠시만요", `중복 방지를 위해 ${COOLDOWN_SECONDS}초 간 재입력이 제한됩니다.`);
+          return showPopup("잠시만요", `중복 방지를 위해 ${COOLDOWN_SECONDS}초 간 재입력이 제한됩니다.`, true);
         }
-        return showPopup("오류", out.error || "저장 실패");
+        return showPopup("저장 실패", out.error || "저장 실패", true);
       }
       document.getElementById("distance").value = "";
+      showPopup("저장 완료", `${out.data}\n${out.name}\n입력: ${out.distance}km\n반영: ${out.effectiveDistance}km`, true);
       await refreshAll();
     }catch(e){
       unlockSubmit();
-      showPopup("오류", "저장 실패(네트워크/권한/URL).");
+      showPopup("오류", "저장 실패(네트워크/권한/URL).", true);
     }
   }
 
@@ -472,7 +508,6 @@
     try{
       await Promise.all([refreshLeaderboard(), refreshMy(), refreshRecent(), refreshSeries()]);
     }catch(e){
-      // 화면은 유지, 힌트만 갱신
       document.getElementById("sumHint").textContent = "불러오기 실패";
     }
   }
@@ -488,6 +523,7 @@
 
     document.getElementById("checkBtn").addEventListener("click", checkName);
     document.getElementById("submitBtn").addEventListener("click", submit);
+    document.getElementById("diagBtn").addEventListener("click", diag);
 
     document.addEventListener("keydown",(e)=>{
       if(e.key!=="Enter") return;
@@ -496,7 +532,7 @@
       else if(id==="distance") submit();
     });
 
-    loadStatus().then(refreshAll).catch(()=>showPopup("오류","상태 불러오기 실패(네트워크/URL)."));
+    loadStatus().then(refreshAll).catch(()=>showPopup("오류","상태 불러오기 실패(네트워크/URL).", true));
   }
   init();
 </script>
