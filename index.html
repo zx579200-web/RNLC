@@ -2,192 +2,227 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>RNLC 개인전</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>RNLC 2월 팀 대항전</title>
   <style>
     :root{ --b:#111; --muted:#666; --card:#fcfcfc; --line:#eee; --radius:16px; }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#fff; color:#111; }
-    .wrap{ width:min(820px, 92vw); margin:0 auto; padding:18px 0 44px; }
-    h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:34px; }
-    .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+    .wrap{ width:min(760px, 92vw); margin:0 auto; padding:18px 0 44px; }
+    h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:34px; letter-spacing:0.02em; }
+
+    .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
     .cardPad{ padding:16px; }
+
     .row{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
     label{ display:block; font-weight:800; font-size:13px; margin:0 0 6px; color:var(--muted); }
-    input{ width:100%; border:1px solid var(--line); border-radius:12px; padding:12px; font-size:16px; outline:none; background:#fff; }
+    input{ width:100%; border:1px solid var(--line); border-radius:12px; padding:12px 12px; font-size:16px; outline:none; }
+    input:focus{ border-color:#cfcfcf; }
     .field{ flex:1; min-width:220px; }
+    .fieldSmall{ width:140px; min-width:140px; }
+
     .btn{ border:none; border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; font-size:15px; background:#111; color:#fff; min-width:120px; }
     .btnSecondary{ background:#f3f3f3; color:#111; }
     .btn:disabled{ opacity:0.55; cursor:not-allowed; }
+
     .hint{ color:var(--muted); font-size:13px; white-space:pre-line; }
+    .pill{ display:inline-block; padding:3px 8px; border-radius:999px; background:#f1f1f1; font-size:12px; font-weight:800; margin-left:6px; vertical-align:middle; }
+    .pillDark{ background:#111; color:#fff; }
+    .pillWarn{ background:#ffe9c7; color:#6a3e00; }
+
     .section{ margin-top:14px; border-top:1px solid var(--line); padding-top:14px; }
+    .sectionHead{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin:0 0 10px; }
+    .sectionHead h2{ margin:0; font-size:18px; font-weight:900; }
+
     .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     @media(max-width:520px){ .grid2{ grid-template-columns:1fr; } }
+
     .miniCard{ border:1px solid var(--line); border-radius:14px; padding:12px; background:var(--card); }
     .big{ font-size:22px; font-weight:900; margin-top:6px; }
-    .mono{ font-variant-numeric:tabular-nums; font-family:ui-monospace, Menlo, monospace; }
+    .mono{ font-variant-numeric:tabular-nums; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+
     .rankList{ border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; }
-    .rankRow{ display:grid; grid-template-columns:40px 1fr 140px; gap:10px; align-items:center; padding:10px 12px; border-top:1px solid var(--line); font-size:15px; }
+    .rankRow{ display:grid; grid-template-columns:40px 1fr 120px; gap:10px; align-items:center; padding:10px 12px; border-top:1px solid var(--line); font-size:15px; }
     .rankRow:first-child{ border-top:none; }
     .right{ text-align:right; }
-    canvas{ width:100%; height:160px; display:block; }
-    .tabBar{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--card); }
-    .tabBtn{ flex:1; height:46px; border:2px solid var(--b); border-radius:12px; background:#fff; font-weight:1000; cursor:pointer; }
-    .tabBtn.active{ background:#111; color:#fff; }
-    .tabPanel{ display:none; margin-top:10px; }
-    .tabPanel.active{ display:block; }
-    .filterRow{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 10px; }
-    .filterBtn{ border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; font-weight:900; cursor:pointer; font-size:12px; }
-    .filterBtn.active{ border-color:#111; background:#111; color:#fff; }
-    .bottomBar{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:14px; }
+
+    .bottomBar{ display:flex; justify-content:flex-end; margin-top:14px; }
     .adminBtn{ text-decoration:none; font-weight:900; font-size:13px; color:#111; border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; }
 
     .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; padding:14px; }
-    .toast{ background:#fff; border-radius:18px; width:min(480px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
+    .toast{ background:#fff; border-radius:18px; width:min(420px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
     .toastTitle{ font-weight:900; font-size:18px; margin:0 0 8px; }
     .toastBody{ margin:0 0 14px; color:#222; white-space:pre-line; line-height:1.35; font-size:14px; }
-    .toastBtnRow{ display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
-    .miniLink{ font-size:12px; color:#111; border:1px solid var(--line); border-radius:999px; padding:6px 10px; background:#fff; cursor:pointer; }
+    .toastBtnRow{ display:flex; justify-content:flex-end; }
+
+    /* 탭/필터 */
+    .tabBar{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--card); margin-top:4px; }
+    .tabBtn{ flex:1; height:46px; border:2px solid var(--b); border-radius:12px; background:#fff; font-weight:1000; cursor:pointer; font-size:14px; }
+    .tabBtn.active{ background:#111; color:#fff; }
+    .tabPanel{ display:none; margin-top:10px; }
+    .tabPanel.active{ display:block; }
+
+    .filterRow{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 10px; }
+    .filterBtn{ border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; font-weight:900; cursor:pointer; font-size:12px; }
+    .filterBtn.active{ border-color:#111; background:#111; color:#fff; }
+
+    .teamTotalRow{ display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 10px; }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>RNLC 개인전</h1>
+  <div class="wrap">
+    <h1>RNLC 2월 팀 대항전</h1>
 
-  <div class="card">
-    <div class="cardPad">
-      <div class="row">
-        <div class="field">
-          <label>이름 (사전등록자만 가능)</label>
-          <input id="name" placeholder="예) 홍길동"/>
-          <div class="hint" id="nameHint" style="margin-top:6px;">이름 입력 후 [확인]을 눌러 주세요.</div>
-        </div>
-        <button class="btn btnSecondary" id="checkBtn">확인</button>
-        <button class="btn btnSecondary" id="diagBtn" title="서버가 어떤 시트를 보고 있는지 진단합니다">진단</button>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <div class="row">
-        <div class="field">
-          <label>거리(km)</label>
-          <input id="distance" placeholder="예) 5.2"/>
-          <div class="hint" style="margin-top:6px;">※ 월 누계는 <b>개인당 200km까지</b> 반영됩니다.</div>
-        </div>
-        <button class="btn" id="submitBtn">입력 완료</button>
-      </div>
-
-      <div class="section">
-        <div class="row" style="justify-content:space-between; align-items:baseline;">
-          <div style="font-weight:900;font-size:18px;">누계 현황</div>
-          <div class="hint" id="sumHint">불러오는 중...</div>
-        </div>
-
-        <div class="grid2" style="margin-top:10px;">
-          <div class="miniCard">
-            <div class="hint">내 누계</div>
-            <div class="big mono" id="myTotal">-</div>
+    <div class="card">
+      <div class="cardPad">
+        <div class="row">
+          <div class="field">
+            <label>이름</label>
+            <input id="name" placeholder="예) 홍길동"/>
           </div>
-          <div class="miniCard">
-            <div class="hint">내 순위</div>
-            <div class="big mono" id="myRank">-</div>
+          <div class="fieldSmall">
+            <label>팀</label>
+            <input id="team" placeholder="R/N/L/C" disabled/>
           </div>
-          <div class="miniCard">
-            <div class="hint">현재 1위 기록</div>
-            <div class="big mono" id="bestTotal">-</div>
+          <button class="btn btnSecondary" id="lookupBtn">입력</button>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <div class="field">
+            <label>거리(km)</label>
+            <input id="distance" placeholder="예) 5.2"/>
+            <div class="hint" style="margin-top:6px;">※ 200km 초과 기록은 저장되며, <b>누계/랭킹에는 200km까지만 반영</b>됩니다.</div>
           </div>
-          <div class="miniCard">
-            <div class="hint">상위 3명</div>
-            <div class="big" id="top3Line">-</div>
+          <button class="btn" id="submitBtn">입력 완료</button>
+        </div>
+
+        <div class="section">
+          <div class="sectionHead">
+            <h2>누계 현황</h2>
+            <div class="hint" id="sumHint">불러오는 중...</div>
+          </div>
+
+          <div class="grid2">
+            <div class="miniCard">
+              <div class="hint">내 누계</div>
+              <div class="big mono" id="myTotal">-</div>
+            </div>
+            <div class="miniCard">
+              <div class="hint">내 팀</div>
+              <div class="big mono" id="myTeam">-</div>
+            </div>
+            <div class="miniCard">
+              <div class="hint">팀 순위</div>
+              <div class="big mono" id="teamRankLine">-</div>
+            </div>
+            <div class="miniCard">
+              <div class="hint">현재 1위 팀 누계</div>
+              <div class="big mono" id="bestTeamTotal">-</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="section">
-        <div class="row" style="justify-content:space-between; align-items:baseline;">
-          <div style="font-weight:900;font-size:18px;">내 누계 그래프</div>
-          <div class="hint" id="chartHint">-</div>
-        </div>
-        <div class="miniCard" style="margin-top:10px;">
-          <canvas id="chart"></canvas>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="tabBar">
-          <button class="tabBtn active" id="tabTop10" type="button">개인 TOP10</button>
-          <button class="tabBtn" id="tabRecent" type="button">최근 인증기록</button>
-        </div>
-
-        <div class="tabPanel active" id="panelTop10">
-          <div style="height:10px"></div>
-          <div class="rankList" id="top10Box"></div>
-        </div>
-
-        <div class="tabPanel" id="panelRecent">
-          <div style="height:10px"></div>
-          <div class="filterRow">
-            <button class="filterBtn" id="fMyName" type="button">내 이름만</button>
-            <button class="filterBtn" id="fToday" type="button">오늘만</button>
-            <button class="filterBtn" id="fReset" type="button">전체</button>
+        <div class="section">
+          <div class="tabBar" role="tablist" aria-label="기록 탭">
+            <button class="tabBtn active" id="tabTop10" type="button" aria-selected="true">개인 TOP10</button>
+            <button class="tabBtn" id="tabRecent" type="button" aria-selected="false">최근 인증기록</button>
           </div>
-          <div class="rankList" id="recentBox"></div>
-        </div>
-      </div>
 
-      <div class="bottomBar">
-        <div class="hint" id="modeHint">-</div>
-        <a class="adminBtn" href="./admin.html">관리자</a>
+          <div class="tabPanel active" id="panelTop10" role="tabpanel">
+            <div class="sectionHead">
+              <h2>개인 TOP 10</h2>
+              <div class="hint">200km 초과는 200km까지만 반영</div>
+            </div>
+            <div class="rankList" id="top10Box"></div>
+          </div>
+
+          <div class="tabPanel" id="panelRecent" role="tabpanel">
+            <div class="sectionHead">
+              <h2>최근 인증 기록</h2>
+              <div class="hint">최대 10개 표시</div>
+            </div>
+
+            <!-- 팀 누적(테스트/검증용) -->
+            <div class="teamTotalRow" id="teamTotalsPills">
+              <span class="pill">R: -</span>
+              <span class="pill">N: -</span>
+              <span class="pill">L: -</span>
+              <span class="pill">C: -</span>
+            </div>
+
+            <div class="filterRow" aria-label="최근 인증 기록 필터">
+              <button class="filterBtn" id="fMyTeam" type="button">내 팀만</button>
+              <button class="filterBtn" id="fMyName" type="button">내 이름만</button>
+              <button class="filterBtn" id="fToday" type="button">오늘만</button>
+              <button class="filterBtn" id="fReset" type="button">전체</button>
+            </div>
+
+            <div class="rankList" id="recentBox"></div>
+          </div>
+        </div>
+
+        <div class="bottomBar">
+          <a class="adminBtn" href="./admin.html">DB(관리자)</a>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="toastMask" id="toastMask">
-  <div class="toast">
-    <div class="toastTitle" id="toastTitle">안내</div>
-    <div class="toastBody" id="toastBody"></div>
-    <div class="toastBtnRow">
-      <button class="miniLink" id="copyLinkBtn" style="display:none;">요청 URL 복사</button>
-      <button class="btn btnSecondary" id="toastBtn">닫기</button>
+  <div class="toastMask" id="toastMask">
+    <div class="toast">
+      <div class="toastTitle" id="toastTitle">완료되었습니다</div>
+      <div class="toastBody" id="toastBody"></div>
+      <div class="toastBtnRow">
+        <button class="btn btnSecondary" id="toastBtn">닫기</button>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpiaBXe7oz30B0Ys5V6TVndP16KPHf7OWSDABliwyFL310VgG95iPUr1ZxtHax7BI/exec";
+  // ✅ 여기만 네 /exec URL로 바꿔서 배포
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
   const COOLDOWN_SECONDS = 60;
 
-  const state = {
-    activeMonth: null,
-    recent: [],
-    filters: { myName:false, today:false },
-    lockUntil: 0,
-    timer: null,
-    lastRequestUrl: ""
-  };
+  function parseKm(v){
+    const n = Number(String(v).trim().replace(",", "."));
+    return Number.isFinite(n) ? n : NaN;
+  }
+  function fmtKm(n){
+    const x = Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+    return x.toLocaleString("ko-KR", { maximumFractionDigits: 2 }) + " km";
+  }
+  function escapeHtml(s){
+    return String(s||"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
 
-  function apiJsonp(params, timeoutMs = 12000){
+  // ✅ 무한로딩 방지: JSONP 타임아웃 포함
+  function apiJsonp(params, timeoutMs = 8000){
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
       params.callback = cb;
 
       const url = new URL(SCRIPT_URL);
       Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-      state.lastRequestUrl = url.toString();
 
       const script = document.createElement("script");
       let done = false;
 
       const timer = setTimeout(() => {
-        if(done) return;
+        if (done) return;
         done = true;
         cleanup();
         reject(new Error("JSONP timeout"));
       }, timeoutMs);
 
       window[cb] = (data) => {
-        if(done) return;
+        if (done) return;
         done = true;
         clearTimeout(timer);
         cleanup();
@@ -195,7 +230,7 @@
       };
 
       script.onerror = () => {
-        if(done) return;
+        if (done) return;
         done = true;
         clearTimeout(timer);
         cleanup();
@@ -212,330 +247,341 @@
     });
   }
 
-  function showPopup(title, body, showCopy=false){
-    document.getElementById("toastTitle").textContent = title || "안내";
+  function showPopup(title, body){
+    document.getElementById("toastTitle").textContent = title || "완료되었습니다";
     document.getElementById("toastBody").textContent = body || "";
     document.getElementById("toastMask").style.display = "flex";
-    const copyBtn = document.getElementById("copyLinkBtn");
-    copyBtn.style.display = (showCopy && state.lastRequestUrl) ? "inline-block" : "none";
   }
   function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
   document.getElementById("toastBtn").addEventListener("click", hidePopup);
   document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
 
-  document.getElementById("copyLinkBtn").addEventListener("click", async ()=>{
-    try{
-      await navigator.clipboard.writeText(state.lastRequestUrl);
-      showPopup("복사 완료", "요청 URL이 클립보드에 복사되었습니다.");
-    }catch(e){
-      showPopup("복사 실패", state.lastRequestUrl);
-    }
-  });
+  // ===== 버튼 쿨다운(프론트) =====
+  let submitLockUntil = 0;
+  let submitTimer = null;
 
-  function parseKm(v){
-    const n = Number(String(v||"").trim().replace(",", "."));
-    return Number.isFinite(n) ? n : NaN;
-  }
-  function fmtKm(n){
-    const x = Math.round((Number(n)+Number.EPSILON)*100)/100;
-    return x.toLocaleString("ko-KR",{maximumFractionDigits:2}) + " km";
-  }
-  function ymdLocal(d){
-    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), dd=String(d.getDate()).padStart(2,"0");
-    return `${y}-${m}-${dd}`;
-  }
-
-  function lockSubmit(seconds){
-    const btn = document.getElementById("submitBtn");
-    const base = "입력 완료";
-    state.lockUntil = Date.now() + seconds*1000;
-    btn.disabled = true;
-
-    clearInterval(state.timer);
-    state.timer = setInterval(()=>{
-      const left = Math.ceil((state.lockUntil - Date.now())/1000);
-      if(left <= 0){
-        clearInterval(state.timer);
-        btn.disabled = false;
-        btn.textContent = base;
-        return;
-      }
-      btn.textContent = `${base} (${left}s)`;
-    }, 250);
-  }
-  function unlockSubmit(){
-    state.lockUntil = 0;
-    clearInterval(state.timer);
+  function unlockSubmitButton(){
+    submitLockUntil = 0;
+    clearInterval(submitTimer);
     const btn = document.getElementById("submitBtn");
     btn.disabled = false;
     btn.textContent = "입력 완료";
   }
 
-  function drawChart(series){
-    const c = document.getElementById("chart");
-    const ctx = c.getContext("2d");
-    const w = c.width = c.clientWidth * devicePixelRatio;
-    const h = c.height = 160 * devicePixelRatio;
-    ctx.clearRect(0,0,w,h);
+  function lockSubmitButton(seconds){
+    const btn = document.getElementById("submitBtn");
+    const baseText = "입력 완료";
+    submitLockUntil = Date.now() + seconds*1000;
 
-    const padL=38*devicePixelRatio, padR=10*devicePixelRatio, padT=10*devicePixelRatio, padB=22*devicePixelRatio;
-    const maxY = Math.max(200, ...series.map(p=>p.total||0), 1);
-    const minY = 0;
-
-    ctx.lineWidth=1*devicePixelRatio;
-    ctx.strokeStyle="#e9e9e9";
-    for(let i=0;i<=4;i++){
-      const y = padT + (h-padT-padB)*(i/4);
-      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
-    }
-
-    const y200 = padT + (h-padT-padB) * (1 - (200-minY)/(maxY-minY));
-    ctx.strokeStyle="#ddd";
-    ctx.setLineDash([6*devicePixelRatio,6*devicePixelRatio]);
-    ctx.beginPath(); ctx.moveTo(padL,y200); ctx.lineTo(w-padR,y200); ctx.stroke();
-    ctx.setLineDash([]);
-
-    if(!series.length) return;
-
-    const x0=padL, x1=w-padR, y0=h-padB, y1=padT;
-    const xAt = (i)=> series.length===1 ? (x0+x1)/2 : x0 + (x1-x0)*(i/(series.length-1));
-    const yAt = (v)=> y0 - (y0-y1)*((v-minY)/(maxY-minY));
-
-    ctx.strokeStyle="#111";
-    ctx.lineWidth=2*devicePixelRatio;
-    ctx.beginPath();
-    series.forEach((p,i)=>{
-      const x=xAt(i), y=yAt(p.total||0);
-      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-
-    const last = series[series.length-1];
-    const lx = xAt(series.length-1);
-    const ly = yAt(last.total||0);
-    ctx.fillStyle="#111";
-    ctx.beginPath();
-    ctx.arc(lx, ly, 3.5*devicePixelRatio, 0, Math.PI*2);
-    ctx.fill();
-  }
-
-  function setTab(tab){
-    const isTop = tab==="top10";
-    document.getElementById("tabTop10").classList.toggle("active", isTop);
-    document.getElementById("tabRecent").classList.toggle("active", !isTop);
-    document.getElementById("panelTop10").classList.toggle("active", isTop);
-    document.getElementById("panelRecent").classList.toggle("active", !isTop);
-    if(!isTop) renderRecent();
-  }
-
-  function syncFilterButtons(){
-    document.getElementById("fMyName").classList.toggle("active", state.filters.myName);
-    document.getElementById("fToday").classList.toggle("active", state.filters.today);
-  }
-
-  function renderRecent(){
-    const box = document.getElementById("recentBox");
-    const nameNow = document.getElementById("name").value.trim();
-    const todayStr = ymdLocal(new Date());
-
-    const filtered = state.recent.filter(r=>{
-      if(state.filters.myName && nameNow && r.name !== nameNow) return false;
-      if(state.filters.today){
-        if(String(r.counted||"").trim() !== todayStr) return false;
+    btn.disabled = true;
+    clearInterval(submitTimer);
+    submitTimer = setInterval(()=>{
+      const left = Math.ceil((submitLockUntil - Date.now())/1000);
+      if(left <= 0){
+        clearInterval(submitTimer);
+        btn.disabled = false;
+        btn.textContent = baseText;
+        return;
       }
-      return true;
-    }).slice(0,10);
-
-    box.innerHTML = filtered.length
-      ? filtered.map(r=>{
-          const eff = (r.effectiveDistance==null) ? null : Number(r.effectiveDistance);
-          const dist = Number(r.distance)||0;
-          const rightText = (eff!=null && eff < dist) ? `${eff} / ${dist}` : `${dist}`;
-          return `
-            <div class="rankRow" style="grid-template-columns:140px 1fr 140px;">
-              <div class="mono">${String(r.data||"").slice(0,16)}</div>
-              <div>${r.name||""}</div>
-              <div class="right mono">${rightText}km</div>
-            </div>
-          `;
-      }).join("")
-      : `<div class="rankRow"><div class="mono">-</div><div>표시할 기록이 없습니다.</div><div class="right mono">-</div></div>`;
+      btn.textContent = `${baseText} (${left}s)`;
+    }, 250);
   }
 
-  async function loadStatus(){
-    const out = await apiJsonp({ action:"status" });
-    if(!out.ok) throw new Error(out.error || "status 실패");
-    state.activeMonth = out.activeMonth;
-    document.getElementById("modeHint").textContent = `활성 월: ${state.activeMonth} (관리자 운영)`;
-  }
-
-  async function diag(){
-    try{
-      const out = await apiJsonp({ action:"diag" });
-      if(!out.ok) return showPopup("진단 실패", out.error || "diag 실패", true);
-
-      const lines = [
-        `Spreadsheet: ${out.spreadsheetName}`,
-        `SpreadsheetId: ${out.spreadsheetId}`,
-        `활성 월: ${out.activeMonth}`,
-        `entries: ${out.entries ? (out.entries.name + ` (lastRow=${out.entries.lastRow})`) : "없음"}`,
-        `DB: ${out.db ? (out.db.name + ` (lastRow=${out.db.lastRow})`) : "없음"}`,
-        `탭 목록: ${Array.isArray(out.sheets) ? out.sheets.join(", ") : "-"}`
-      ];
-      showPopup("진단 결과", lines.join("\n"), true);
-    }catch(e){
-      showPopup("진단 실패", "네트워크/URL 문제일 수 있습니다.", true);
-    }
-  }
-
-  async function checkName(){
+  async function lookupTeam(){
     const name = document.getElementById("name").value.trim();
-    if(!name) return showPopup("확인", "이름을 입력해 주세요.");
+    if(!name) return showPopup("확인", "이름을 입력하세요.");
 
+    let out;
     try{
-      const out = await apiJsonp({ action:"checkName", name });
-      if(!out.ok) return showPopup("오류", out.error || "checkName 실패", true);
-      const hint = document.getElementById("nameHint");
-      if(out.registered){
-        hint.textContent = "등록 확인 완료 ✅";
-        await refreshAll();
-        document.getElementById("distance").focus();
-      }else{
-        hint.textContent = "미등록 참가자 ❌ (관리자에게 DB 등록 요청)";
-        showPopup("미등록", "사전등록자만 참가 가능합니다.\n관리자에게 등록 요청해 주세요.", true);
-      }
+      out = await apiJsonp({ action:"lookupTeam", name });
     }catch(e){
-      showPopup("오류", "확인 실패(네트워크/URL).", true);
+      return showPopup("오류", "불러오기 실패(네트워크/권한/URL).");
     }
+
+    if(!out.ok) return showPopup("확인", "DB에 없는 이름입니다. (DB 시트 확인)");
+
+    document.getElementById("team").value = out.team;
+    await Promise.all([refreshMyTotal(), refreshLeaderboardAndTeamTotals(), refreshRecent()]);
+    document.getElementById("distance").focus();
   }
 
   async function submit(){
-    if(Date.now() < state.lockUntil) return;
+    if(Date.now() < submitLockUntil) return;
 
     const name = document.getElementById("name").value.trim();
+    const team = document.getElementById("team").value.trim();
     const distRaw = document.getElementById("distance").value.trim();
     const km = parseKm(distRaw);
 
-    if(!name) return showPopup("확인", "이름을 입력해 주세요.");
-    if(!Number.isFinite(km) || km<=0) return showPopup("확인", "거리(km)를 0보다 큰 숫자로 입력해 주세요.");
+    if(!name) return showPopup("확인", "이름을 입력하세요.");
+    if(!team) return showPopup("확인", "[입력] 버튼으로 팀을 먼저 확인하세요.");
+    if(!Number.isFinite(km) || km <= 0) return showPopup("확인", "거리(km)를 0보다 큰 숫자로 입력하세요.");
 
-    lockSubmit(COOLDOWN_SECONDS);
+    lockSubmitButton(COOLDOWN_SECONDS);
+
+    let out;
+    try{
+      out = await apiJsonp({ action:"submit", name, distance: distRaw });
+    }catch(e){
+      unlockSubmitButton();
+      return showPopup("오류", "저장 실패(네트워크/권한/URL).");
+    }
+
+    if(!out.ok){
+      unlockSubmitButton();
+      if(String(out.error || "").includes("cooldown")){
+        return showPopup("잠시만요", `중복 방지를 위해 ${COOLDOWN_SECONDS}초 간 재입력이 제한됩니다.\n잠시 후 다시 시도해 주세요.`);
+      }
+      return showPopup("오류", out.error || "저장 실패");
+    }
+
+    const dist = out.distance;
+    const eff = out.effectiveDistance;
+    const capped = !!out.capped;
+
+    let msg = `${out.date}\n${out.name} / ${out.team}팀\n입력: ${dist}km`;
+    if (typeof eff === "number") msg += `\n집계 반영: ${eff}km`;
+    if (capped) msg += `\n※ 200km 초과분은 집계 제외(200km까지만 반영)`;
+
+    showPopup("완료되었습니다", msg);
+
+    document.getElementById("distance").value = "";
+    await Promise.all([refreshLeaderboardAndTeamTotals(), refreshMyTotal(), refreshRecent()]);
+  }
+
+  async function refreshMyTotal(){
+    const name = document.getElementById("name").value.trim();
+    if(!name){
+      document.getElementById("myTotal").textContent = "-";
+      document.getElementById("myTeam").textContent = "-";
+      return;
+    }
 
     try{
-      const out = await apiJsonp({ action:"submit", name, distance: distRaw });
-      if(!out.ok){
-        unlockSubmit();
-        if(String(out.error||"").includes("cooldown")){
-          return showPopup("잠시만요", `중복 방지를 위해 ${COOLDOWN_SECONDS}초 간 재입력이 제한됩니다.`, true);
-        }
-        return showPopup("저장 실패", out.error || "저장 실패", true);
-      }
-      document.getElementById("distance").value = "";
-      showPopup("저장 완료", `${out.data}\n${out.name}\n입력: ${out.distance}km\n반영: ${out.effectiveDistance}km`, true);
-      await refreshAll();
+      const out = await apiJsonp({ action:"personTotal", name });
+      if(!out.ok) return;
+      document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
+      document.getElementById("myTeam").textContent = out.team || "-";
     }catch(e){
-      unlockSubmit();
-      showPopup("오류", "저장 실패(네트워크/권한/URL).", true);
+      // 조용히 무시
     }
   }
 
-  async function refreshLeaderboard(){
-    const out = await apiJsonp({ action:"leaderboard" });
-    if(!out.ok) throw new Error(out.error || "leaderboard 실패");
+  async function refreshLeaderboardAndTeamTotals(){
+    const hint = document.getElementById("sumHint");
+    hint.textContent = "불러오는 중...";
 
-    document.getElementById("bestTotal").textContent = out.best ? fmtKm(out.best.total) : "-";
-    const top3 = out.top3 || [];
-    document.getElementById("top3Line").textContent = top3.length
-      ? top3.map((p,i)=>`${i+1}위 ${p.name}(${p.total}km)`).join(" / ")
-      : "-";
+    let out;
+    try{
+      out = await apiJsonp({ action:"leaderboard" });
+    }catch(e){
+      hint.textContent = "불러오기 실패";
+      return;
+    }
 
+    if(!out.ok){
+      hint.textContent = "불러오기 실패";
+      return;
+    }
+
+    const ranks = out.teamRanks || [];
+    document.getElementById("teamRankLine").textContent =
+      ranks.map((x,i)=> `${i+1}위 ${x.team}`).join(" / ") || "-";
+
+    document.getElementById("bestTeamTotal").textContent =
+      ranks[0] ? `${ranks[0].team} : ${fmtKm(ranks[0].total)}` : "-";
+
+    // TOP10
     const top10 = out.top10 || [];
     const box = document.getElementById("top10Box");
     box.innerHTML = top10.length
-      ? top10.map((p,i)=>`
+      ? top10.map((p,i)=> `
         <div class="rankRow">
           <div class="mono">${i+1}</div>
-          <div>${p.name}</div>
+          <div>${escapeHtml(p.name)} <span class="pill">${escapeHtml(p.team || '-')}팀</span></div>
           <div class="right mono">${fmtKm(p.total)}</div>
         </div>
       `).join("")
       : `<div class="rankRow"><div class="mono">-</div><div>데이터 없음</div><div class="right mono">-</div></div>`;
 
-    const now = new Date();
-    document.getElementById("sumHint").textContent =
-      `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")} / ${out.monthKey}`;
-  }
-
-  async function refreshMy(){
-    const name = document.getElementById("name").value.trim();
-    if(!name){
-      document.getElementById("myTotal").textContent="-";
-      document.getElementById("myRank").textContent="-";
-      return;
+    // 팀 누적(최근탭 위)
+    const tt = out.teamTotals || {};
+    const pillBox = document.getElementById("teamTotalsPills");
+    if(pillBox){
+      pillBox.innerHTML = `
+        <span class="pill pillDark">R : ${fmtKm(tt.R || 0)}</span>
+        <span class="pill pillDark">N : ${fmtKm(tt.N || 0)}</span>
+        <span class="pill pillDark">L : ${fmtKm(tt.L || 0)}</span>
+        <span class="pill pillDark">C : ${fmtKm(tt.C || 0)}</span>
+      `;
     }
-    const out = await apiJsonp({ action:"personTotal", name });
-    if(!out.ok) return;
-    document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
-    document.getElementById("myRank").textContent = out.rank ? `${out.rank}위` : "-";
+
+    const now = new Date();
+    hint.textContent = `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
   }
 
-  async function refreshRecent(){
-    const out = await apiJsonp({ action:"recentEntries", limit:"200" });
-    if(!out.ok) throw new Error(out.error || "recentEntries 실패");
-    state.recent = out.rows || [];
+  // ===== 최근 인증 기록(탭 + 필터) =====
+  let recentRows = [];
+  const recentFilter = { myTeam:false, myName:false, today:false };
+
+  function ymdLocal(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${dd}`;
+  }
+
+  function setTab(tab){
+    const isTop = (tab === "top10");
+    document.getElementById("tabTop10").classList.toggle("active", isTop);
+    document.getElementById("tabRecent").classList.toggle("active", !isTop);
+    document.getElementById("tabTop10").setAttribute("aria-selected", isTop ? "true" : "false");
+    document.getElementById("tabRecent").setAttribute("aria-selected", isTop ? "false" : "true");
+
+    document.getElementById("panelTop10").classList.toggle("active", isTop);
+    document.getElementById("panelRecent").classList.toggle("active", !isTop);
+
+    if(!isTop) renderRecent();
+  }
+
+  function syncFilterButtons(){
+    document.getElementById("fMyTeam").classList.toggle("active", recentFilter.myTeam);
+    document.getElementById("fMyName").classList.toggle("active", recentFilter.myName);
+    document.getElementById("fToday").classList.toggle("active", recentFilter.today);
+  }
+
+  function toggleFilter(key){
+    recentFilter[key] = !recentFilter[key];
+    syncFilterButtons();
     renderRecent();
   }
 
-  async function refreshSeries(){
-    const name = document.getElementById("name").value.trim();
-    if(!name){
-      drawChart([]);
-      document.getElementById("chartHint").textContent = "-";
-      return;
-    }
-    const out = await apiJsonp({ action:"personDailySeries", name });
-    if(!out.ok){
-      drawChart([]);
-      document.getElementById("chartHint").textContent = "불러오기 실패";
-      return;
-    }
-    const series = (out.series||[]).map(x=>({date:x.date, total:Number(x.total||0)}));
-    drawChart(series);
-    document.getElementById("chartHint").textContent = `${out.monthKey} / ${series.length}일 누적`;
-  }
-
-  async function refreshAll(){
-    try{
-      await Promise.all([refreshLeaderboard(), refreshMy(), refreshRecent(), refreshSeries()]);
-    }catch(e){
-      document.getElementById("sumHint").textContent = "불러오기 실패";
-    }
-  }
-
-  function init(){
-    document.getElementById("tabTop10").addEventListener("click", ()=>setTab("top10"));
-    document.getElementById("tabRecent").addEventListener("click", ()=>setTab("recent"));
-
-    document.getElementById("fMyName").addEventListener("click", ()=>{ state.filters.myName=!state.filters.myName; syncFilterButtons(); renderRecent(); });
-    document.getElementById("fToday").addEventListener("click", ()=>{ state.filters.today=!state.filters.today; syncFilterButtons(); renderRecent(); });
-    document.getElementById("fReset").addEventListener("click", ()=>{ state.filters.myName=false; state.filters.today=false; syncFilterButtons(); renderRecent(); });
+  function resetFilters(){
+    recentFilter.myTeam = false;
+    recentFilter.myName = false;
+    recentFilter.today = false;
     syncFilterButtons();
-
-    document.getElementById("checkBtn").addEventListener("click", checkName);
-    document.getElementById("submitBtn").addEventListener("click", submit);
-    document.getElementById("diagBtn").addEventListener("click", diag);
-
-    document.addEventListener("keydown",(e)=>{
-      if(e.key!=="Enter") return;
-      const id = document.activeElement?.id;
-      if(id==="name") checkName();
-      else if(id==="distance") submit();
-    });
-
-    loadStatus().then(refreshAll).catch(()=>showPopup("오류","상태 불러오기 실패(네트워크/URL).", true));
+    renderRecent();
   }
-  init();
+
+  function fmtRecentRow(r){
+    const date = escapeHtml(String(r.date || "").slice(0,16));
+    const name = escapeHtml(r.name || "");
+    const team = escapeHtml(r.team || "-");
+
+
+    const dist = Number(r.distance) || 0;
+
+    // effectiveDistance가 없는(구버전 entries) 기록은 null 처리
+
+    const effRaw = r.effectiveDistance;
+
+    const eff = (effRaw === null || effRaw === undefined || effRaw === "")
+      ? null
+      : Number(effRaw);
+
+    // capped 판단도 eff가 있을 때만 신뢰
+
+    const capped = (eff !== null) ? (eff < dist) : false;
+
+
+    const badge = capped ? `<span class="pill pillWarn">200 캡</span>` : "";
+
+    const rightText = (eff !== null && capped) ? `${eff} / ${dist}` : `${dist}`;
+
+
+    return `
+      <div class="rankRow" style="grid-template-columns:140px 1fr 120px;">
+        <div class="mono">${date}</div>
+        <div>${name} <span class="pill">${team}팀</span> ${badge}</div>
+        <div class="right mono">${escapeHtml(rightText)}km</div>
+      </div>
+    `;
+  }
+
+  function applyRecentFilters(rows){
+    const nameNow = document.getElementById("name").value.trim();
+    const teamNow = document.getElementById("team").value.trim();
+    const todayStr = ymdLocal(new Date());
+
+    return rows.filter(r => {
+      if(recentFilter.myTeam && teamNow && String(r.team||"") !== teamNow) return false;
+      if(recentFilter.myName && nameNow && String(r.name||"") !== nameNow) return false;
+
+      // ✅ 오늘 필터는 ts 기반
+      if(recentFilter.today){
+        const t = Number(String(r.ts).replaceAll(",", ""));
+        if(!Number.isFinite(t)) return false;
+        const d2 = ymdLocal(new Date(t));
+        if(d2 !== todayStr) return false;
+      }
+      return true;
+    });
+  }
+
+  async function refreshRecent(){
+    const box = document.getElementById("recentBox");
+    if(!box) return;
+
+    let out;
+    try{
+      out = await apiJsonp({ action:"recentEntries", limit:"200" });
+    }catch(e){
+      box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>불러오기 실패</div><div class="right mono">-</div></div>`;
+      return;
+    }
+
+    if(!out.ok){
+      box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>불러오기 실패</div><div class="right mono">-</div></div>`;
+      return;
+    }
+
+    recentRows = out.rows || [];
+    renderRecent();
+  }
+
+  function renderRecent(){
+    const box = document.getElementById("recentBox");
+    if(!box) return;
+
+    const filtered = applyRecentFilters(recentRows);
+    const rows = filtered.slice(0, 10);
+
+    box.innerHTML = rows.length
+      ? rows.map(fmtRecentRow).join("")
+      : `<div class="rankRow"><div class="mono">-</div><div>표시할 기록이 없습니다.</div><div class="right mono">-</div></div>`;
+  }
+
+  function initTabsAndFilters(){
+    const t1 = document.getElementById("tabTop10");
+    const t2 = document.getElementById("tabRecent");
+    if(!t1 || !t2) return;
+
+    t1.addEventListener("click", ()=> setTab("top10"));
+    t2.addEventListener("click", ()=> setTab("recent"));
+
+    document.getElementById("fMyTeam").addEventListener("click", ()=> toggleFilter("myTeam"));
+    document.getElementById("fMyName").addEventListener("click", ()=> toggleFilter("myName"));
+    document.getElementById("fToday").addEventListener("click", ()=> toggleFilter("today"));
+    document.getElementById("fReset").addEventListener("click", resetFilters);
+
+    syncFilterButtons();
+  }
+
+  document.getElementById("lookupBtn").addEventListener("click", lookupTeam);
+  document.getElementById("submitBtn").addEventListener("click", submit);
+
+  document.addEventListener("keydown", (e)=>{
+    if(e.key !== "Enter") return;
+    const id = document.activeElement?.id;
+    if(id === "name") lookupTeam();
+    else if(id === "distance") submit();
+  });
+
+  // 초기 실행
+  initTabsAndFilters();
+  refreshLeaderboardAndTeamTotals();
+  refreshRecent();
 </script>
 </body>
 </html>
-
