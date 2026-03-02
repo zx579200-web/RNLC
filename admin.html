@@ -29,7 +29,7 @@
     .actions{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
 
     .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.25); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
-    .toast{ width:min(440px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
+    .toast{ width:min(460px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
     .toastTitle{ font-size:18px; font-weight:1000; margin:4px 0 8px; }
     .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
     .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
@@ -49,26 +49,17 @@
       <input id="pass" class="input" style="width:220px" placeholder="관리자 비밀번호(pass)"/>
       <button class="btn" id="btnLoad">불러오기</button>
       <button class="btn" id="btnRebuild">캐시 재계산</button>
+      <button class="btn danger" id="btnMonthReset">월간 리셋</button>
       <a class="btn" href="./index.html" style="text-decoration:none; color:#111; display:inline-flex; align-items:center;">← 메인</a>
     </div>
     <div class="hint">
-      * 비밀번호는 스프레드시트의 <b>admin</b> 시트 <b>A1</b> 값입니다.
+      * 비밀번호는 스프레드시트의 <b>admin</b> 시트 <b>A1</b> 값입니다.<br/>
+      * <b>월간 리셋</b>은 캐시(user_totals_v2, stats_v2)만 초기화합니다. entries(원본 기록)는 삭제하지 않습니다.
     </div>
   </div>
 
   <div class="section card">
     <h2>명단(DB)</h2>
-    <div class="row" style="margin-bottom:10px;">
-      <input id="moveName" class="input" style="width:220px" placeholder="이동할 이름"/>
-      <select id="toTeam" class="input" style="width:120px">
-        <option value="R">R</option>
-        <option value="N">N</option>
-        <option value="L">L</option>
-        <option value="C">C</option>
-      </select>
-      <button class="btn" id="btnMove">팀 이동</button>
-      <span class="hint">* DB 시트(B/D/F/H) 배정 수정</span>
-    </div>
     <div id="rosterBox" class="hint">불러오기 전</div>
   </div>
 
@@ -91,7 +82,6 @@
             <th class="mono">ts</th>
             <th>date</th>
             <th>name</th>
-            <th>team</th>
             <th class="right">km</th>
             <th>counted</th>
             <th>note</th>
@@ -99,7 +89,7 @@
           </tr>
         </thead>
         <tbody id="entriesBody">
-          <tr><td colspan="8" class="hint">불러오기 전</td></tr>
+          <tr><td colspan="7" class="hint">불러오기 전</td></tr>
         </tbody>
       </table>
     </div>
@@ -151,38 +141,38 @@
   function passValue(){ return document.getElementById("pass").value.trim(); }
 
   function renderRoster(roster){
-    // roster는 [{name, team}] 배열로 오므로 team별로 묶기
-    const grouped = { R:[], N:[], L:[], C:[] };
+    const grouped = {};
     (roster || []).forEach(x=>{
-      const t = String(x.team||'').trim();
+      const t = String(x.team||'').trim() || '-';
       const n = String(x.name||'').trim();
-      if(grouped[t] && n) grouped[t].push(n);
+      if(!n) return;
+      grouped[t] = grouped[t] || [];
+      grouped[t].push(n);
     });
 
-    const teams = ["R","N","L","C"];
-    const html = teams.map(t=>{
+    const keys = Object.keys(grouped).sort();
+    const html = keys.map(t=>{
       const list = (grouped[t] || []).map(n=>`<span class="pill">${n}</span>`).join(" ");
-      return `<div style="margin:8px 0;"><b>${t}팀</b> (${(grouped[t]||[]).length}명)
+      return `<div style="margin:8px 0;"><b>${t}</b> (${(grouped[t]||[]).length}명)
         <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${list || "<span class='hint'>-</span>"}</div>
       </div>`;
     }).join("");
-    document.getElementById("rosterBox").innerHTML = html;
+    document.getElementById("rosterBox").innerHTML = html || "<span class='hint'>-</span>";
   }
 
   function renderEntries(rows){
     const body = document.getElementById("entriesBody");
     if(!rows || !rows.length){
-      body.innerHTML = `<tr><td colspan="8" class="hint">데이터 없음</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="hint">데이터 없음</td></tr>`;
       return;
     }
     rows.sort((a,b)=> (b.ts||0) - (a.ts||0));
 
-    body.innerHTML = rows.slice(0, 400).map(r=>`
+    body.innerHTML = rows.slice(0, 500).map(r=>`
       <tr>
         <td class="mono">${r.ts||""}</td>
         <td>${r.date||""}</td>
         <td>${r.name||""}</td>
-        <td>${r.team||""}</td>
         <td class="right mono">${(r.distance||0).toString()}</td>
         <td>${String(r.counted)}</td>
         <td class="mono">${r.note||""}</td>
@@ -225,25 +215,6 @@
     }
   }
 
-  async function move(){
-    const pass = passValue();
-    const name = document.getElementById("moveName").value.trim();
-    const toTeam = document.getElementById("toTeam").value;
-
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-    if(!name) return showPopup("확인", "이동할 이름을 입력하세요.");
-
-    try{
-      const out = await apiJsonp({ action:"move", pass, name, toTeam });
-      if(!out.ok) return showPopup("오류", out.error || "팀 이동 실패");
-
-      await loadAll();
-    }catch(err){
-      showPopup("오류", String(err && err.message ? err.message : err));
-    }
-  }
-
-  // ✅ 캐시 재계산 버튼
   async function rebuildCache(){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
@@ -264,7 +235,25 @@
     }
   }
 
-  // ✅ 수정: distance만 변경
+  async function monthReset(){
+    const pass = passValue();
+    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
+
+    const ok = confirm("월간 리셋을 실행할까요?\n- 캐시만 초기화\n- entries 원본 기록은 유지\n\n※ 리셋 후 메인 화면에서 누계를 다시 보기 전, 캐시 재계산을 추천합니다.");
+    if(!ok) return;
+
+    showPopup("진행중", "월간 리셋 중입니다...");
+
+    try{
+      const out = await apiJsonp({ action:"monthReset", pass });
+      if(!out || !out.ok) return showPopup("오류", (out && out.error) ? out.error : "monthReset 실패");
+      showPopup("완료", "월간 리셋 완료!\n이어서 캐시 재계산을 수행합니다.");
+      await rebuildCache();
+    }catch(err){
+      showPopup("오류", String(err && err.message ? err.message : err));
+    }
+  }
+
   async function editEntry(ts, oldDistance){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
@@ -285,7 +274,6 @@
     }
   }
 
-  // ✅ 삭제
   async function deleteEntry(ts){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
@@ -304,13 +292,12 @@
     }
   }
 
-  // 전역 노출(인라인 onclick용)
   window.editEntry = editEntry;
   window.deleteEntry = deleteEntry;
 
   document.getElementById("btnLoad").addEventListener("click", loadAll);
   document.getElementById("btnRebuild").addEventListener("click", rebuildCache);
-  document.getElementById("btnMove").addEventListener("click", move);
+  document.getElementById("btnMonthReset").addEventListener("click", monthReset);
   document.getElementById("btnFilter").addEventListener("click", applyFilter);
   document.getElementById("btnClear").addEventListener("click", ()=>{
     document.getElementById("filterName").value = "";
