@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>RNLC 2월 팀 대항전</title>
+  <title>RNLC 3월 개인전</title>
   <style>
     :root{ --b:#111; --muted:#666; --card:#fcfcfc; --line:#eee; --radius:16px; }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#fff; color:#111; }
-    .wrap{ width:min(760px, 92vw); margin:0 auto; padding:18px 0 44px; }
+    .wrap{ width:min(820px, 92vw); margin:0 auto; padding:18px 0 44px; }
     h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:34px; letter-spacing:0.02em; }
 
     .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
@@ -19,7 +19,7 @@
     input{ width:100%; border:1px solid var(--line); border-radius:12px; padding:12px 12px; font-size:16px; outline:none; }
     input:focus{ border-color:#cfcfcf; }
     .field{ flex:1; min-width:220px; }
-    .fieldSmall{ width:140px; min-width:140px; }
+    .fieldSmall{ width:160px; min-width:160px; }
 
     .btn{ border:none; border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; font-size:15px; background:#111; color:#fff; min-width:120px; }
     .btnSecondary{ background:#f3f3f3; color:#111; }
@@ -35,7 +35,7 @@
     .sectionHead h2{ margin:0; font-size:18px; font-weight:900; }
 
     .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media(max-width:520px){ .grid2{ grid-template-columns:1fr; } }
+    @media(max-width:560px){ .grid2{ grid-template-columns:1fr; } }
 
     .miniCard{ border:1px solid var(--line); border-radius:14px; padding:12px; background:var(--card); }
     .big{ font-size:22px; font-weight:900; margin-top:6px; }
@@ -46,16 +46,6 @@
     .rankRow:first-child{ border-top:none; }
     .right{ text-align:right; }
 
-    .bottomBar{ display:flex; justify-content:flex-end; margin-top:14px; }
-    .adminBtn{ text-decoration:none; font-weight:900; font-size:13px; color:#111; border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; }
-
-    .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; padding:14px; }
-    .toast{ background:#fff; border-radius:18px; width:min(420px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
-    .toastTitle{ font-weight:900; font-size:18px; margin:0 0 8px; }
-    .toastBody{ margin:0 0 14px; color:#222; white-space:pre-line; line-height:1.35; font-size:14px; }
-    .toastBtnRow{ display:flex; justify-content:flex-end; }
-
-    /* 탭/필터 */
     .tabBar{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--card); margin-top:4px; }
     .tabBtn{ flex:1; height:46px; border:2px solid var(--b); border-radius:12px; background:#fff; font-weight:1000; cursor:pointer; font-size:14px; }
     .tabBtn.active{ background:#111; color:#fff; }
@@ -66,25 +56,39 @@
     .filterBtn{ border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; font-weight:900; cursor:pointer; font-size:12px; }
     .filterBtn.active{ border-color:#111; background:#111; color:#fff; }
 
-    .teamTotalRow{ display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 10px; }
+    .bottomBar{ display:flex; justify-content:flex-end; margin-top:14px; }
+    .adminBtn{ text-decoration:none; font-weight:900; font-size:13px; color:#111; border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; }
+
+    .podium{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+    @media(max-width:560px){ .podium{ grid-template-columns:1fr; } }
+    .podiumCard{ border:1px solid var(--line); border-radius:14px; padding:12px; background:#fff; }
+    .podiumRank{ font-weight:1000; font-size:12px; color:var(--muted); }
+    .podiumName{ font-weight:1000; font-size:16px; margin-top:6px; }
+    .podiumKm{ font-weight:1000; font-size:18px; margin-top:6px; }
+
+    .chartBox{ border:1px solid var(--line); border-radius:14px; padding:12px; background:#fff; }
+    canvas{ width:100%; height:220px; display:block; }
+
+    .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; padding:14px; }
+    .toast{ background:#fff; border-radius:18px; width:min(440px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
+    .toastTitle{ font-weight:900; font-size:18px; margin:0 0 8px; }
+    .toastBody{ margin:0 0 14px; color:#222; white-space:pre-line; line-height:1.35; font-size:14px; }
+    .toastBtnRow{ display:flex; justify-content:flex-end; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>RNLC 2월 팀 대항전</h1>
+    <h1>RNLC 3월 개인전</h1>
 
     <div class="card">
       <div class="cardPad">
+
         <div class="row">
           <div class="field">
             <label>이름</label>
             <input id="name" placeholder="예) 홍길동"/>
           </div>
-          <div class="fieldSmall">
-            <label>팀</label>
-            <input id="team" placeholder="R/N/L/C" disabled/>
-          </div>
-          <button class="btn btnSecondary" id="lookupBtn">입력</button>
+          <button class="btn btnSecondary" id="lookupBtn">불러오기</button>
         </div>
 
         <div style="height:10px"></div>
@@ -93,7 +97,7 @@
           <div class="field">
             <label>거리(km)</label>
             <input id="distance" placeholder="예) 5.2"/>
-            <div class="hint" style="margin-top:6px;">※ 200km 초과 기록은 저장되며, <b>누계/랭킹에는 200km까지만 반영</b>됩니다.</div>
+            <div class="hint" style="margin-top:6px;">※ 개인 누계는 <b>월간 200km</b>까지만 반영됩니다. (초과 기록은 저장되지만 집계 제외)</div>
           </div>
           <button class="btn" id="submitBtn">입력 완료</button>
         </div>
@@ -110,17 +114,36 @@
               <div class="big mono" id="myTotal">-</div>
             </div>
             <div class="miniCard">
-              <div class="hint">내 팀</div>
-              <div class="big mono" id="myTeam">-</div>
+              <div class="hint">내 순위</div>
+              <div class="big mono" id="myRank">-</div>
             </div>
             <div class="miniCard">
-              <div class="hint">팀 순위</div>
-              <div class="big mono" id="teamRankLine">-</div>
+              <div class="hint">현재 1위 기록</div>
+              <div class="big mono" id="bestTotal">-</div>
             </div>
             <div class="miniCard">
-              <div class="hint">현재 1위 팀 누계</div>
-              <div class="big mono" id="bestTeamTotal">-</div>
+              <div class="hint">이번 달</div>
+              <div class="big mono" id="monthKey">-</div>
             </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sectionHead">
+            <h2>상위 3명</h2>
+            <div class="hint">월간 누계 기준</div>
+          </div>
+          <div class="podium" id="podiumBox"></div>
+        </div>
+
+        <div class="section">
+          <div class="sectionHead">
+            <h2>내 누계 그래프</h2>
+            <div class="hint" id="trendHint">-</div>
+          </div>
+          <div class="chartBox">
+            <canvas id="trendCanvas" width="800" height="240"></canvas>
+            <div class="hint" style="margin-top:8px;">* 선: 일자별 누적 / 점선: 200km 캡</div>
           </div>
         </div>
 
@@ -133,7 +156,7 @@
           <div class="tabPanel active" id="panelTop10" role="tabpanel">
             <div class="sectionHead">
               <h2>개인 TOP 10</h2>
-              <div class="hint">200km 초과는 200km까지만 반영</div>
+              <div class="hint">월간 200km 캡 반영</div>
             </div>
             <div class="rankList" id="top10Box"></div>
           </div>
@@ -144,16 +167,7 @@
               <div class="hint">최대 10개 표시</div>
             </div>
 
-            <!-- 팀 누적(테스트/검증용) -->
-            <div class="teamTotalRow" id="teamTotalsPills">
-              <span class="pill">R: -</span>
-              <span class="pill">N: -</span>
-              <span class="pill">L: -</span>
-              <span class="pill">C: -</span>
-            </div>
-
             <div class="filterRow" aria-label="최근 인증 기록 필터">
-              <button class="filterBtn" id="fMyTeam" type="button">내 팀만</button>
               <button class="filterBtn" id="fMyName" type="button">내 이름만</button>
               <button class="filterBtn" id="fToday" type="button">오늘만</button>
               <button class="filterBtn" id="fReset" type="button">전체</button>
@@ -166,6 +180,7 @@
         <div class="bottomBar">
           <a class="adminBtn" href="./admin.html">DB(관리자)</a>
         </div>
+
       </div>
     </div>
   </div>
@@ -181,7 +196,6 @@
   </div>
 
 <script>
-  // ✅ 여기만 네 /exec URL로 바꿔서 배포
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
   const COOLDOWN_SECONDS = 60;
 
@@ -202,7 +216,6 @@
       .replaceAll("'","&#039;");
   }
 
-  // ✅ 무한로딩 방지: JSONP 타임아웃 포함
   function apiJsonp(params, timeoutMs = 8000){
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
@@ -287,21 +300,22 @@
     }, 250);
   }
 
-  async function lookupTeam(){
+  let nameReady = false;
+
+  async function lookupName(){
     const name = document.getElementById("name").value.trim();
     if(!name) return showPopup("확인", "이름을 입력하세요.");
 
     let out;
     try{
-      out = await apiJsonp({ action:"lookupTeam", name });
+      out = await apiJsonp({ action:"lookupName", name });
     }catch(e){
       return showPopup("오류", "불러오기 실패(네트워크/권한/URL).");
     }
+    if(!out.ok) return showPopup("확인", out.error || "DB에 없는 이름입니다. (DB 시트 확인)");
 
-    if(!out.ok) return showPopup("확인", "DB에 없는 이름입니다. (DB 시트 확인)");
-
-    document.getElementById("team").value = out.team;
-    await Promise.all([refreshMyTotal(), refreshLeaderboardAndTeamTotals(), refreshRecent()]);
+    nameReady = true;
+    await refreshAll();
     document.getElementById("distance").focus();
   }
 
@@ -309,12 +323,11 @@
     if(Date.now() < submitLockUntil) return;
 
     const name = document.getElementById("name").value.trim();
-    const team = document.getElementById("team").value.trim();
     const distRaw = document.getElementById("distance").value.trim();
     const km = parseKm(distRaw);
 
     if(!name) return showPopup("확인", "이름을 입력하세요.");
-    if(!team) return showPopup("확인", "[입력] 버튼으로 팀을 먼저 확인하세요.");
+    if(!nameReady) return showPopup("확인", "[불러오기]로 이름을 먼저 확인하세요.");
     if(!Number.isFinite(km) || km <= 0) return showPopup("확인", "거리(km)를 0보다 큰 숫자로 입력하세요.");
 
     lockSubmitButton(COOLDOWN_SECONDS);
@@ -339,90 +352,183 @@
     const eff = out.effectiveDistance;
     const capped = !!out.capped;
 
-    let msg = `${out.date}\n${out.name} / ${out.team}팀\n입력: ${dist}km`;
+    let msg = `${out.date}\n${out.name}\n입력: ${dist}km`;
     if (typeof eff === "number") msg += `\n집계 반영: ${eff}km`;
-    if (capped) msg += `\n※ 200km 초과분은 집계 제외(200km까지만 반영)`;
+    if (capped) msg += `\n※ 월간 200km 초과분은 집계 제외(200km까지만 반영)`;
 
     showPopup("완료되었습니다", msg);
 
     document.getElementById("distance").value = "";
-    await Promise.all([refreshLeaderboardAndTeamTotals(), refreshMyTotal(), refreshRecent()]);
+    await refreshAll();
   }
 
-  async function refreshMyTotal(){
+  async function refreshStatus(){
     const name = document.getElementById("name").value.trim();
     if(!name){
       document.getElementById("myTotal").textContent = "-";
-      document.getElementById("myTeam").textContent = "-";
+      document.getElementById("myRank").textContent = "-";
+      document.getElementById("bestTotal").textContent = "-";
+      document.getElementById("monthKey").textContent = "-";
       return;
     }
 
+    let out;
     try{
-      const out = await apiJsonp({ action:"personTotal", name });
-      if(!out.ok) return;
-      document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
-      document.getElementById("myTeam").textContent = out.team || "-";
+      out = await apiJsonp({ action:"personStatus", name });
     }catch(e){
-      // 조용히 무시
+      return;
     }
+    if(!out.ok) return;
+
+    document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
+    document.getElementById("myRank").textContent = out.rank ? `${out.rank}위 / ${out.totalPeople||0}명` : "-";
+    document.getElementById("bestTotal").textContent = (out.bestTotal != null) ? fmtKm(out.bestTotal) : "-";
+    document.getElementById("monthKey").textContent = out.month || "-";
+
+    // top3
+    const podium = document.getElementById("podiumBox");
+    const t3 = out.top3 || [];
+    podium.innerHTML = t3.length ? t3.map((p,i)=>`
+      <div class="podiumCard">
+        <div class="podiumRank">${i+1}위</div>
+        <div class="podiumName">${escapeHtml(p.name || "-")}</div>
+        <div class="podiumKm mono">${fmtKm(p.total || 0)}</div>
+      </div>
+    `).join("") : `<div class="podiumCard"><div class="podiumRank">-</div><div class="podiumName">데이터 없음</div><div class="podiumKm mono">-</div></div>`;
   }
 
-  async function refreshLeaderboardAndTeamTotals(){
-    const hint = document.getElementById("sumHint");
-    hint.textContent = "불러오는 중...";
+  // ===== 그래프 =====
+  function drawTrend(series){
+    const c = document.getElementById("trendCanvas");
+    const ctx = c.getContext("2d");
 
+    // HiDPI
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = c.clientWidth || 800;
+    const cssH = 220;
+    c.style.height = cssH + "px";
+    c.width = Math.floor(cssW * dpr);
+    c.height = Math.floor(cssH * dpr);
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0,0,cssW,cssH);
+
+    const pad = 28;
+    const w = cssW - pad*2;
+    const h = cssH - pad*2;
+
+    // axes
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#ddd";
+    ctx.beginPath();
+    ctx.moveTo(pad, pad);
+    ctx.lineTo(pad, pad+h);
+    ctx.lineTo(pad+w, pad+h);
+    ctx.stroke();
+
+    const maxY = Math.max(200, ...series.map(x=>Number(x.cumulative||0)));
+    const minY = 0;
+
+    const maxX = Math.max(1, series.length-1);
+
+    const xAt = (i)=> pad + (i/maxX)*w;
+    const yAt = (v)=> pad + h - ((v-minY)/(maxY-minY))*h;
+
+    // dashed 200 cap
+    ctx.save();
+    ctx.setLineDash([6,6]);
+    ctx.strokeStyle = "#bbb";
+    ctx.beginPath();
+    ctx.moveTo(pad, yAt(200));
+    ctx.lineTo(pad+w, yAt(200));
+    ctx.stroke();
+    ctx.restore();
+
+    if(series.length === 0){
+      ctx.fillStyle = "#666";
+      ctx.font = "14px system-ui";
+      ctx.fillText("데이터가 없습니다.", pad, pad+20);
+      return;
+    }
+
+    // line
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    series.forEach((pt,i)=>{
+      const x = xAt(i);
+      const y = yAt(Number(pt.cumulative||0));
+      if(i===0) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    // last dot
+    const last = series[series.length-1];
+    ctx.fillStyle = "#111";
+    ctx.beginPath();
+    ctx.arc(xAt(series.length-1), yAt(Number(last.cumulative||0)), 3.5, 0, Math.PI*2);
+    ctx.fill();
+
+    // labels
+    ctx.fillStyle = "#666";
+    ctx.font = "12px ui-monospace, Menlo, monospace";
+    ctx.fillText("0", 6, pad+h+4);
+    ctx.fillText(String(Math.round(maxY)), 6, pad+6);
+  }
+
+  async function refreshTrend(){
+    const name = document.getElementById("name").value.trim();
+    const hint = document.getElementById("trendHint");
+    if(!name){ drawTrend([]); hint.textContent = "-"; return; }
+
+    let out;
+    try{
+      out = await apiJsonp({ action:"personDailySeries", name });
+    }catch(e){
+      drawTrend([]);
+      hint.textContent = "불러오기 실패";
+      return;
+    }
+    if(!out.ok){ drawTrend([]); hint.textContent = "불러오기 실패"; return; }
+
+    drawTrend(out.series || []);
+    hint.textContent = out.series && out.series.length ? `일자 ${out.series[0].date} ~ ${out.series[out.series.length-1].date}` : "데이터 없음";
+  }
+
+  // ===== TOP10 =====
+  async function refreshTop10(){
     let out;
     try{
       out = await apiJsonp({ action:"leaderboard" });
     }catch(e){
-      hint.textContent = "불러오기 실패";
+      document.getElementById("sumHint").textContent = "불러오기 실패";
       return;
     }
-
     if(!out.ok){
-      hint.textContent = "불러오기 실패";
+      document.getElementById("sumHint").textContent = "불러오기 실패";
       return;
     }
 
-    const ranks = out.teamRanks || [];
-    document.getElementById("teamRankLine").textContent =
-      ranks.map((x,i)=> `${i+1}위 ${x.team}`).join(" / ") || "-";
-
-    document.getElementById("bestTeamTotal").textContent =
-      ranks[0] ? `${ranks[0].team} : ${fmtKm(ranks[0].total)}` : "-";
-
-    // TOP10
     const top10 = out.top10 || [];
     const box = document.getElementById("top10Box");
     box.innerHTML = top10.length
       ? top10.map((p,i)=> `
         <div class="rankRow">
           <div class="mono">${i+1}</div>
-          <div>${escapeHtml(p.name)} <span class="pill">${escapeHtml(p.team || '-')}팀</span></div>
+          <div>${escapeHtml(p.name)}</div>
           <div class="right mono">${fmtKm(p.total)}</div>
         </div>
       `).join("")
       : `<div class="rankRow"><div class="mono">-</div><div>데이터 없음</div><div class="right mono">-</div></div>`;
 
-    // 팀 누적(최근탭 위)
-    const tt = out.teamTotals || {};
-    const pillBox = document.getElementById("teamTotalsPills");
-    if(pillBox){
-      pillBox.innerHTML = `
-        <span class="pill pillDark">R : ${fmtKm(tt.R || 0)}</span>
-        <span class="pill pillDark">N : ${fmtKm(tt.N || 0)}</span>
-        <span class="pill pillDark">L : ${fmtKm(tt.L || 0)}</span>
-        <span class="pill pillDark">C : ${fmtKm(tt.C || 0)}</span>
-      `;
-    }
-
     const now = new Date();
-    hint.textContent = `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+    document.getElementById("sumHint").textContent = `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
   }
 
-  // ===== 최근 인증 기록(탭 + 필터) =====
+  // ===== 최근 인증 기록 =====
   let recentRows = [];
-  const recentFilter = { myTeam:false, myName:false, today:false };
+  const recentFilter = { myName:false, today:false };
 
   function ymdLocal(d){
     const y = d.getFullYear();
@@ -431,21 +537,7 @@
     return `${y}-${m}-${dd}`;
   }
 
-  function setTab(tab){
-    const isTop = (tab === "top10");
-    document.getElementById("tabTop10").classList.toggle("active", isTop);
-    document.getElementById("tabRecent").classList.toggle("active", !isTop);
-    document.getElementById("tabTop10").setAttribute("aria-selected", isTop ? "true" : "false");
-    document.getElementById("tabRecent").setAttribute("aria-selected", isTop ? "false" : "true");
-
-    document.getElementById("panelTop10").classList.toggle("active", isTop);
-    document.getElementById("panelRecent").classList.toggle("active", !isTop);
-
-    if(!isTop) renderRecent();
-  }
-
   function syncFilterButtons(){
-    document.getElementById("fMyTeam").classList.toggle("active", recentFilter.myTeam);
     document.getElementById("fMyName").classList.toggle("active", recentFilter.myName);
     document.getElementById("fToday").classList.toggle("active", recentFilter.today);
   }
@@ -457,7 +549,6 @@
   }
 
   function resetFilters(){
-    recentFilter.myTeam = false;
     recentFilter.myName = false;
     recentFilter.today = false;
     syncFilterButtons();
@@ -467,33 +558,19 @@
   function fmtRecentRow(r){
     const date = escapeHtml(String(r.date || "").slice(0,16));
     const name = escapeHtml(r.name || "");
-    const team = escapeHtml(r.team || "-");
-
-
     const dist = Number(r.distance) || 0;
 
-    // effectiveDistance가 없는(구버전 entries) 기록은 null 처리
-
     const effRaw = r.effectiveDistance;
-
-    const eff = (effRaw === null || effRaw === undefined || effRaw === "")
-      ? null
-      : Number(effRaw);
-
-    // capped 판단도 eff가 있을 때만 신뢰
-
+    const eff = (effRaw === null || effRaw === undefined || effRaw === "") ? null : Number(effRaw);
     const capped = (eff !== null) ? (eff < dist) : false;
 
-
     const badge = capped ? `<span class="pill pillWarn">200 캡</span>` : "";
-
     const rightText = (eff !== null && capped) ? `${eff} / ${dist}` : `${dist}`;
-
 
     return `
       <div class="rankRow" style="grid-template-columns:140px 1fr 120px;">
         <div class="mono">${date}</div>
-        <div>${name} <span class="pill">${team}팀</span> ${badge}</div>
+        <div>${name} ${badge}</div>
         <div class="right mono">${escapeHtml(rightText)}km</div>
       </div>
     `;
@@ -501,14 +578,10 @@
 
   function applyRecentFilters(rows){
     const nameNow = document.getElementById("name").value.trim();
-    const teamNow = document.getElementById("team").value.trim();
     const todayStr = ymdLocal(new Date());
 
     return rows.filter(r => {
-      if(recentFilter.myTeam && teamNow && String(r.team||"") !== teamNow) return false;
       if(recentFilter.myName && nameNow && String(r.name||"") !== nameNow) return false;
-
-      // ✅ 오늘 필터는 ts 기반
       if(recentFilter.today){
         const t = Number(String(r.ts).replaceAll(",", ""));
         if(!Number.isFinite(t)) return false;
@@ -552,15 +625,24 @@
       : `<div class="rankRow"><div class="mono">-</div><div>표시할 기록이 없습니다.</div><div class="right mono">-</div></div>`;
   }
 
+  // ===== 탭 =====
+  function setTab(tab){
+    const isTop = (tab === "top10");
+    document.getElementById("tabTop10").classList.toggle("active", isTop);
+    document.getElementById("tabRecent").classList.toggle("active", !isTop);
+    document.getElementById("tabTop10").setAttribute("aria-selected", isTop ? "true" : "false");
+    document.getElementById("tabRecent").setAttribute("aria-selected", isTop ? "false" : "true");
+
+    document.getElementById("panelTop10").classList.toggle("active", isTop);
+    document.getElementById("panelRecent").classList.toggle("active", !isTop);
+
+    if(!isTop) renderRecent();
+  }
+
   function initTabsAndFilters(){
-    const t1 = document.getElementById("tabTop10");
-    const t2 = document.getElementById("tabRecent");
-    if(!t1 || !t2) return;
+    document.getElementById("tabTop10").addEventListener("click", ()=> setTab("top10"));
+    document.getElementById("tabRecent").addEventListener("click", ()=> setTab("recent"));
 
-    t1.addEventListener("click", ()=> setTab("top10"));
-    t2.addEventListener("click", ()=> setTab("recent"));
-
-    document.getElementById("fMyTeam").addEventListener("click", ()=> toggleFilter("myTeam"));
     document.getElementById("fMyName").addEventListener("click", ()=> toggleFilter("myName"));
     document.getElementById("fToday").addEventListener("click", ()=> toggleFilter("today"));
     document.getElementById("fReset").addEventListener("click", resetFilters);
@@ -568,21 +650,29 @@
     syncFilterButtons();
   }
 
-  document.getElementById("lookupBtn").addEventListener("click", lookupTeam);
+  async function refreshAll(){
+    await Promise.all([
+      refreshTop10(),
+      refreshStatus(),
+      refreshTrend(),
+      refreshRecent()
+    ]);
+  }
+
+  document.getElementById("lookupBtn").addEventListener("click", lookupName);
   document.getElementById("submitBtn").addEventListener("click", submit);
 
   document.addEventListener("keydown", (e)=>{
     if(e.key !== "Enter") return;
     const id = document.activeElement?.id;
-    if(id === "name") lookupTeam();
+    if(id === "name") lookupName();
     else if(id === "distance") submit();
   });
 
   // 초기 실행
   initTabsAndFilters();
-  refreshLeaderboardAndTeamTotals();
+  refreshTop10();
   refreshRecent();
 </script>
 </body>
 </html>
-
