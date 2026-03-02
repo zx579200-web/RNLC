@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>RNLC 관리자</title>
   <style>
     :root{ --b:#111; --muted:#666; --line:#eee; --radius:16px; }
@@ -15,18 +15,16 @@
     .input{ height:48px; border:2px solid var(--b); border-radius:12px; padding:10px 12px; font-size:15px; outline:none; }
     .btn{ height:48px; border:2px solid var(--b); border-radius:12px; background:#fff; font-size:15px; font-weight:900; cursor:pointer; padding:0 14px; }
     .btn.danger{ border-color:#c00; color:#c00; }
+    .btn.mini{ height:34px; font-size:13px; padding:0 10px; border-radius:10px; }
     .hint{ font-size:12px; color:var(--muted); margin-top:8px; white-space:pre-line; }
-    .section{ margin-top:14px; }
-    h2{ margin:12px 0 10px; font-size:16px; font-weight:900; }
-    .pill{ display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
-    .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.25); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
-    .toast{ width:min(520px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:0 12px 30px rgba(0,0,0,0.12); }
-    .toastTitle{ font-size:18px; font-weight:1000; margin:4px 0 8px; }
-    .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
-    .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
+    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    th, td{ border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; vertical-align:middle; }
+    th{ font-weight:900; background:#fafafa; }
+    .mono{ font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+    .right{ text-align:right; }
+    .actions{ display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap; }
   </style>
 </head>
-
 <body>
 <div class="wrap">
   <h1>RNLC 관리자</h1>
@@ -37,183 +35,181 @@
       <button class="btn" id="btnLoad">불러오기</button>
       <button class="btn" id="btnRebuild">캐시 재계산</button>
       <button class="btn danger" id="btnMonthlyReset">월간 리셋(아카이브)</button>
-      <a class="btn" href="./index.html" style="text-decoration:none; color:#111; display:inline-flex; align-items:center;">← 메인</a>
+      <a class="btn" href="?page=index" style="text-decoration:none; color:#111; display:inline-flex; align-items:center;">← 메인</a>
     </div>
-    <div class="hint" id="statusHint">
-      * 비밀번호는 스프레드시트의 admin!A1 값입니다.
-      * 활성 월은 admin!B1 입니다.
-    </div>
+    <div class="hint" id="statusHint">상태 불러오는 중...</div>
   </div>
 
-  <div class="section card">
-    <h2>사전등록자(DB)</h2>
-    <div class="row" style="margin-bottom:10px;">
+  <div class="card" style="margin-top:14px;">
+    <h3 style="margin:0 0 10px;">사전등록자(DB)</h3>
+    <div class="row">
       <input id="pName" class="input" style="width:240px" placeholder="등록/삭제할 이름"/>
       <button class="btn" id="btnAdd">등록</button>
       <button class="btn danger" id="btnRemove">삭제</button>
     </div>
-    <div class="hint">* DB!A2:A 에 이름이 있으면 참가 가능</div>
-    <div id="rosterBox" class="hint">불러오기 전</div>
+    <div class="hint" id="rosterHint">-</div>
   </div>
-</div>
 
-<div class="toastMask" id="toastMask">
-  <div class="toast">
-    <div class="toastTitle" id="toastTitle">안내</div>
-    <div class="toastBody" id="toastBody"></div>
-    <button class="toastBtn" id="toastBtn">확인</button>
+  <div class="card" style="margin-top:14px;">
+    <div class="row" style="justify-content:space-between;">
+      <h3 style="margin:0;">기록(entries)</h3>
+      <div class="hint">수정: distance만 변경 / 삭제: 행 삭제 / 변경 후 자동 재계산</div>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <input id="filterName" class="input" style="width:220px" placeholder="이름 필터(선택)"/>
+      <button class="btn" id="btnFilter">조회</button>
+      <button class="btn" id="btnClear">필터 해제</button>
+    </div>
+
+    <div style="overflow:auto; margin-top:10px;">
+      <table>
+        <thead>
+          <tr>
+            <th class="mono">ts</th>
+            <th>data</th>
+            <th>name</th>
+            <th class="right">distance</th>
+            <th class="right">effective</th>
+            <th>counted</th>
+            <th>monthKey</th>
+            <th>note</th>
+            <th class="right">관리</th>
+          </tr>
+        </thead>
+        <tbody id="entriesBody">
+          <tr><td colspan="9" class="hint">불러오기 전</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
+  function pass(){ return document.getElementById("pass").value.trim(); }
 
-  function showPopup(title, body){
-    document.getElementById("toastTitle").textContent = title || "안내";
-    document.getElementById("toastBody").textContent = body || "";
-    document.getElementById("toastMask").style.display = "flex";
-  }
-  function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
-  document.getElementById("toastBtn").addEventListener("click", hidePopup);
-  document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
+  let activeMonth = null;
+  let rowsCache = [];
 
-  function apiJsonp(params, timeoutMs = 12000){
-    return new Promise((resolve, reject) => {
-      const cb = "cb_" + Math.random().toString(36).slice(2);
-      params.callback = cb;
+  function setStatus(text){ document.getElementById("statusHint").textContent = text; }
 
-      const url = new URL(SCRIPT_URL);
-      Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-      url.searchParams.set("_", String(Date.now())); // ✅ 캐시 방지
-
-      const script = document.createElement("script");
-      let done = false;
-
-      const timer = setTimeout(() => {
-        if(done) return;
-        done = true;
-        cleanup();
-        reject(new Error("JSONP timeout"));
-      }, timeoutMs);
-
-      window[cb] = (data) => {
-        if(done) return;
-        done = true;
-        clearTimeout(timer);
-        cleanup();
-        resolve(data);
-      };
-
-      script.onerror = () => {
-        if(done) return;
-        done = true;
-        clearTimeout(timer);
-        cleanup();
-        reject(new Error("JSONP load error"));
-      };
-
-      script.src = url.toString();
-      document.body.appendChild(script);
-
-      function cleanup(){
-        try{ delete window[cb]; }catch(e){}
-        script.remove();
-      }
-    });
+  function loadStatus(){
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return setStatus("상태 불러오기 실패");
+      activeMonth = out.activeMonth;
+      setStatus(`활성 월: ${activeMonth}`);
+    }).apiStatus();
   }
 
-  function passValue(){ return document.getElementById("pass").value.trim(); }
-  function pName(){ return document.getElementById("pName").value.trim(); }
-
-  function renderRoster(roster){
-    const list = (roster||[]).map(x=>String(x.name||"").trim()).filter(Boolean);
-    document.getElementById("rosterBox").innerHTML = `
-      <div><b>등록자</b> (${list.length}명)</div>
-      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
-        ${list.map(n=>`<span class="pill">${n}</span>`).join("") || "<span class='hint'>-</span>"}
-      </div>
-    `;
+  function loadRoster(){
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return document.getElementById("rosterHint").textContent = out?.error || "불러오기 실패";
+      const list = (out.roster||[]).map(x=>x.name);
+      document.getElementById("rosterHint").textContent = `등록자 ${list.length}명`;
+    }).apiAdminRoster(pass());
   }
 
-  async function loadStatus(){
-    try{
-      const out = await apiJsonp({ action:"status" });
-      if(!out.ok) throw new Error(out.error||"status failed");
-      document.getElementById("statusHint").textContent = `활성 월: ${out.activeMonth} / 아카이브 월: ${(out.months||[]).length}개`;
-      return out;
-    }catch(e){
-      showPopup("오류", "status 불러오기 실패(권한/URL).");
-      return null;
+  function renderEntries(rows){
+    const body = document.getElementById("entriesBody");
+    if(!rows || !rows.length){
+      body.innerHTML = `<tr><td colspan="9" class="hint">데이터 없음</td></tr>`;
+      return;
     }
+    rowsCache = rows.slice();
+    body.innerHTML = rows.map(r=>`
+      <tr>
+        <td class="mono">${r.ts||""}</td>
+        <td>${(r.data||"").slice(0,16)}</td>
+        <td>${r.name||""}</td>
+        <td class="right mono">${r.distance ?? ""}</td>
+        <td class="right mono">${r.effectiveDistance ?? ""}</td>
+        <td class="mono">${r.counted||""}</td>
+        <td class="mono">${r.monthKey||""}</td>
+        <td class="mono">${r.note||""}</td>
+        <td class="right">
+          <div class="actions">
+            <button class="btn mini" onclick="editEntry(${r.ts}, ${r.distance||0})">수정</button>
+            <button class="btn mini danger" onclick="deleteEntry(${r.ts})">삭제</button>
+          </div>
+        </td>
+      </tr>
+    `).join("");
   }
 
-  async function loadAll(){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-
-    const st = await loadStatus();
-    if(!st) return;
-
-    try{
-      const roster = await apiJsonp({ action:"roster", pass });
-      if(!roster.ok) return showPopup("오류", roster.error || "roster 실패");
-      renderRoster(roster.roster);
-      showPopup("완료", "불러오기 완료");
-    }catch(e){
-      showPopup("오류", String(e && e.message ? e.message : e));
-    }
+  function loadEntries(){
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return renderEntries([]);
+      renderEntries(out.rows || []);
+    }).apiAdminGetEntries(pass(), document.getElementById("filterName").value.trim(), 400);
   }
 
-  async function addP(){
-    const pass = passValue();
-    const name = pName();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-    if(!name) return showPopup("확인", "이름을 입력하세요.");
-
-    const out = await apiJsonp({ action:"addParticipant", pass, name });
-    if(!out.ok) return showPopup("오류", out.error || "등록 실패");
-    await loadAll();
+  window.editEntry = function(ts, oldDist){
+    const nd = prompt("새 거리(km)를 입력해 주세요.", String(oldDist||""));
+    if(!nd) return;
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return alert(out?.error || "수정 실패");
+      loadEntries();
+    }).apiAdminEditEntry(pass(), String(ts), nd);
   }
 
-  async function removeP(){
-    const pass = passValue();
-    const name = pName();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-    if(!name) return showPopup("확인", "이름을 입력하세요.");
-
-    if(!confirm(`삭제할까요?\n이름: ${name}`)) return;
-
-    const out = await apiJsonp({ action:"removeParticipant", pass, name });
-    if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
-    await loadAll();
+  window.deleteEntry = function(ts){
+    if(!confirm("정말 삭제하시겠습니까?")) return;
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return alert(out?.error || "삭제 실패");
+      loadEntries();
+    }).apiAdminDeleteEntry(pass(), String(ts));
   }
 
-  async function rebuildCache(){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-    if(!confirm("활성 월 캐시를 재계산할까요?")) return;
-
-    showPopup("진행중", "재계산 중...");
-    const out = await apiJsonp({ action:"rebuildCache", pass });
-    if(!out.ok) return showPopup("오류", out.error || "rebuildCache 실패");
-    showPopup("완료", `월: ${out.monthKey}\n캐시 대상 사용자: ${out.count}명`);
+  function addParticipant(){
+    const name = document.getElementById("pName").value.trim();
+    if(!name) return;
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return alert(out?.error || "등록 실패");
+      loadRoster();
+    }).apiAdminAddParticipant(pass(), name);
   }
 
-  async function monthlyReset(){
-    const pass = passValue();
-    if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력하세요.");
-    if(!confirm("월간 리셋(아카이브)을 실행할까요?\n- v2 캐시를 월별 시트로 보관\n- 활성 월을 다음달로 전환\n- v2 캐시 초기화")) return;
-
-    showPopup("진행중", "월간 리셋 중...");
-    const out = await apiJsonp({ action:"monthlyReset", pass });
-    if(!out.ok) return showPopup("오류", out.error || "monthlyReset 실패");
-    showPopup("완료", `아카이브: ${out.archivedMonth}\n새 활성 월: ${out.newActiveMonth}`);
-    await loadAll();
+  function removeParticipant(){
+    const name = document.getElementById("pName").value.trim();
+    if(!name) return;
+    if(!confirm("삭제하시겠습니까?")) return;
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return alert(out?.error || "삭제 실패");
+      loadRoster();
+    }).apiAdminRemoveParticipant(pass(), name);
   }
 
-  document.getElementById("btnLoad").addEventListener("click", loadAll);
-  document.getElementById("btnAdd").addEventListener("click", addP);
-  document.getElementById("btnRemove").addEventListener("click", removeP);
+  function rebuildCache(){
+    if(!confirm("활성 월 캐시를 재계산하시겠습니까?")) return;
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return alert(out?.error || "재계산 실패");
+      alert(`재계산 완료\n월: ${out.monthKey}\n인원: ${out.count}`);
+      loadEntries();
+    }).apiAdminRebuildCache(pass());
+  }
+
+  function monthlyReset(){
+    if(!confirm("월간 리셋(아카이브)을 실행하시겠습니까?")) return;
+    google.script.run.withSuccessHandler((out)=>{
+      if(!out || !out.ok) return alert(out?.error || "리셋 실패");
+      alert(`아카이브: ${out.archivedMonth}\n새 활성 월: ${out.newActiveMonth}`);
+      loadStatus();
+      loadEntries();
+    }).apiAdminMonthlyReset(pass());
+  }
+
+  document.getElementById("btnLoad").addEventListener("click", ()=>{
+    loadStatus();
+    loadRoster();
+    loadEntries();
+  });
+  document.getElementById("btnFilter").addEventListener("click", loadEntries);
+  document.getElementById("btnClear").addEventListener("click", ()=>{
+    document.getElementById("filterName").value="";
+    loadEntries();
+  });
+  document.getElementById("btnAdd").addEventListener("click", addParticipant);
+  document.getElementById("btnRemove").addEventListener("click", removeParticipant);
   document.getElementById("btnRebuild").addEventListener("click", rebuildCache);
   document.getElementById("btnMonthlyReset").addEventListener("click", monthlyReset);
 
