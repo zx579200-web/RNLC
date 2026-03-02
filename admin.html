@@ -64,13 +64,13 @@
       <input id="addDate" class="input mono" style="width:160px" placeholder="counted (YYYY-MM-DD, 옵션)"/>
       <button class="btn" id="btnAddEntry">기록 추가</button>
     </div>
-    <div class="hint">* counted를 비우면 오늘로 처리됩니다. 추가 후 자동으로 전체 재계산됩니다.</div>
+    <div class="hint">* counted를 비우면 오늘로 처리됩니다. 추가/수정/삭제 후에는 자동 재계산을 권장드립니다.</div>
   </div>
 
   <div class="card" style="margin-top:14px;">
     <div class="row" style="justify-content:space-between; align-items:baseline;">
       <h2 style="margin:0; font-size:16px; font-weight:900;">기록(entries)</h2>
-      <div class="hint">* 수정: distance만 변경 / 삭제: 행 삭제 (이후 자동 재계산)</div>
+      <div class="hint">* 수정: distance만 변경 / 삭제: 행 삭제</div>
     </div>
 
     <div class="row" style="margin:10px 0 8px;">
@@ -190,7 +190,7 @@
     rows.sort((a,b)=> (b.ts||0) - (a.ts||0));
     allEntries = rows;
 
-    body.innerHTML = rows.slice(0, 800).map(r=>`
+    body.innerHTML = rows.slice(0, 900).map(r=>`
       <tr>
         <td class="mono">${r.ts||""}</td>
         <td>${String(r.data||"").slice(0,16)}</td>
@@ -217,26 +217,21 @@
   }
 
   async function loadStatus(){
-    try{
-      const out = await apiJsonp({ action:"status" });
-      if(!out.ok) return showPopup("오류", out.error || "status 실패");
-      activeMonth = out.activeMonth;
-      document.getElementById("statusHint").innerHTML = `활성 월: <b>${activeMonth}</b>`;
-    }catch(e){
-      showPopup("오류", "상태 불러오기 실패(네트워크/URL).");
-    }
+    const out = await apiJsonp({ action:"status" });
+    if(!out.ok) throw new Error(out.error || "status 실패");
+    activeMonth = out.activeMonth;
+    document.getElementById("statusHint").innerHTML = `활성 월: <b>${activeMonth}</b>`;
   }
 
   async function loadAll(){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
 
-    await loadStatus();
-
     try{
+      await loadStatus();
       const [roster, entries] = await Promise.all([
         apiJsonp({ action:"roster", pass }),
-        apiJsonp({ action:"adminEntries", pass, limit:"800", nameFilter: "" })
+        apiJsonp({ action:"adminEntries", pass, limit:"900", nameFilter:"" })
       ]);
 
       if(!roster.ok) return showPopup("오류", roster.error || "roster 실패");
@@ -255,6 +250,7 @@
     const name = document.getElementById("pName").value.trim();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
     if(!name) return showPopup("확인", "이름을 입력해 주세요.");
+
     const out = await apiJsonp({ action:"addParticipant", pass, name });
     if(!out.ok) return showPopup("오류", out.error || "등록 실패");
     await loadAll();
@@ -266,6 +262,7 @@
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
     if(!name) return showPopup("확인", "이름을 입력해 주세요.");
     if(!confirm(`DB(A열)에서 삭제할까요?\n이름: ${name}`)) return;
+
     const out = await apiJsonp({ action:"removeParticipant", pass, name });
     if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
     await loadAll();
@@ -279,20 +276,23 @@
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
     if(!name || !km) return showPopup("확인", "이름/거리를 입력해 주세요.");
 
-    showPopup("진행중", "추가 및 재계산 중...");
+    showPopup("진행중", "기록 추가 중...");
     const out = await apiJsonp({ action:"addEntry", pass, name, distance: km, counted });
     if(!out.ok) return showPopup("오류", out.error || "추가 실패");
-    showPopup("완료", `기록 추가 완료\n재계산 집계 인원: ${out.count}`);
+
+    showPopup("완료", `기록 추가 완료\n(정합성 보장을 위해 재계산이 실행되었습니다)\n집계 인원: ${out.count}`);
     await loadAll();
   }
 
   async function rebuildCache(){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
-    if(!confirm("캐시 재계산(정합성 보정)을 실행할까요?")) return;
+    if(!confirm("재계산(정합성 보정)을 실행할까요?\n(entries의 effectiveDistance/note가 다시 계산됩니다)")) return;
+
     showPopup("진행중", "재계산 중...");
     const out = await apiJsonp({ action:"rebuildCache", pass });
     if(!out.ok) return showPopup("오류", out.error || "rebuildCache 실패");
+
     showPopup("완료", `재계산 완료\n월: ${out.monthKey}\n집계 인원: ${out.count}명`);
     await loadAll();
   }
@@ -300,26 +300,26 @@
   async function monthlyReset(){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
-
-    if(!confirm("월간 리셋을 실행할까요?\n- entries를 entries_YYYY-MM로 아카이브\n- entries는 초기화(헤더만)\n- 활성월을 다음달로 변경\n(되돌리기 어렵습니다)")) return;
+    if(!confirm("월간 리셋을 실행할까요?\n- entries를 entries_YYYY-MM로 복사(없으면 생성)\n- entries는 초기화(헤더만)\n- 활성월을 다음달로 변경\n\n※ 사용하지 않으셔도 됩니다.")) return;
 
     showPopup("진행중", "월간 리셋 실행 중...");
     const out = await apiJsonp({ action:"monthlyReset", pass });
     if(!out.ok) return showPopup("오류", out.error || "monthlyReset 실패");
-    showPopup("완료", `아카이브 완료: ${out.archivedMonth}\n새 활성 월: ${out.newActiveMonth}`);
+
+    showPopup("완료", `아카이브: ${out.archivedMonth}\n새 활성 월: ${out.newActiveMonth}`);
     await loadAll();
   }
 
-  // edit/delete
   window.editEntry = async function(ts, oldDist){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
     const nd = prompt("새 거리(km)를 입력해 주세요.", String(oldDist||""));
     if(!nd) return;
 
-    showPopup("진행중", "수정 및 재계산 중...");
+    showPopup("진행중", "수정 중...");
     const out = await apiJsonp({ action:"editEntry", pass, ts:String(ts), distance: nd });
     if(!out.ok) return showPopup("오류", out.error || "수정 실패");
+
     showPopup("완료", `수정 완료\n재계산 집계 인원: ${out.count}`);
     await loadAll();
   };
@@ -329,9 +329,10 @@
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
     if(!confirm("정말 삭제할까요?")) return;
 
-    showPopup("진행중", "삭제 및 재계산 중...");
+    showPopup("진행중", "삭제 중...");
     const out = await apiJsonp({ action:"deleteEntry", pass, ts:String(ts) });
     if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
+
     showPopup("완료", `삭제 완료\n재계산 집계 인원: ${out.count}`);
     await loadAll();
   };
@@ -350,7 +351,7 @@
     renderEntries(allEntries);
   });
 
-  loadStatus();
+  loadStatus().catch(()=>{});
 </script>
 </body>
 </html>
