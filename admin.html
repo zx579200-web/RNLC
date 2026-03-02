@@ -25,10 +25,11 @@
     .actions{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
     .pill{ display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
     .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.25); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
-    .toast{ width:min(460px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
+    .toast{ width:min(520px, 92vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; box-shadow:0 12px 30px rgba(0,0,0,0.12); text-align:center; }
     .toastTitle{ font-size:18px; font-weight:1000; margin:4px 0 8px; }
     .toastBody{ font-size:14px; color:#333; margin:0 0 12px; white-space:pre-line; }
-    .toastBtn{ width:100%; height:48px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; }
+    .toastBtnRow{ display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+    .toastBtn{ height:44px; border:2px solid var(--b); border-radius:14px; background:#fff; font-weight:900; cursor:pointer; padding:0 12px; }
   </style>
 </head>
 <body>
@@ -39,6 +40,7 @@
     <div class="row">
       <input id="pass" class="input" style="width:220px" placeholder="관리자 비밀번호(pass)"/>
       <button class="btn" id="btnLoad">불러오기</button>
+      <button class="btn" id="btnDiag">진단</button>
       <button class="btn" id="btnRebuild">캐시 재계산</button>
       <button class="btn danger" id="btnMonthlyReset">월간 리셋(아카이브)</button>
       <a class="btn" href="./index.html" style="text-decoration:none; color:#111; display:inline-flex; align-items:center;">← 메인</a>
@@ -64,7 +66,7 @@
       <input id="addDate" class="input mono" style="width:160px" placeholder="counted (YYYY-MM-DD, 옵션)"/>
       <button class="btn" id="btnAddEntry">기록 추가</button>
     </div>
-    <div class="hint">* counted를 비우면 오늘로 처리됩니다. 추가/수정/삭제 후에는 자동 재계산을 권장드립니다.</div>
+    <div class="hint">* counted를 비우면 오늘로 처리됩니다. 추가/수정/삭제 후에는 자동 재계산됩니다.</div>
   </div>
 
   <div class="card" style="margin-top:14px;">
@@ -74,7 +76,7 @@
     </div>
 
     <div class="row" style="margin:10px 0 8px;">
-      <input id="filterName" class="input" style="width:200px" placeholder="이름 필터(선택)"/>
+      <input id="filterName" class="input" style="width:200px" placeholder="이름 필터(정확히 일치)"/>
       <button class="btn" id="btnFilter" style="height:48px;">필터 적용</button>
       <button class="btn" id="btnClear" style="height:48px;">필터 해제</button>
     </div>
@@ -106,7 +108,10 @@
   <div class="toast">
     <div class="toastTitle" id="toastTitle">안내</div>
     <div class="toastBody" id="toastBody"></div>
-    <button class="toastBtn" id="toastBtn">확인</button>
+    <div class="toastBtnRow">
+      <button class="toastBtn" id="copyLinkBtn" style="display:none;">요청 URL 복사</button>
+      <button class="toastBtn" id="toastBtn">확인</button>
+    </div>
   </div>
 </div>
 
@@ -114,15 +119,26 @@
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
   let activeMonth = null;
   let allEntries = [];
+  let lastRequestUrl = "";
 
-  function showPopup(title, body){
+  function showPopup(title, body, showCopy=false){
     document.getElementById("toastTitle").textContent = title || "안내";
     document.getElementById("toastBody").textContent = body || "";
     document.getElementById("toastMask").style.display = "flex";
+    document.getElementById("copyLinkBtn").style.display = (showCopy && lastRequestUrl) ? "inline-block" : "none";
   }
   function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
   document.getElementById("toastBtn").addEventListener("click", hidePopup);
   document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
+
+  document.getElementById("copyLinkBtn").addEventListener("click", async ()=>{
+    try{
+      await navigator.clipboard.writeText(lastRequestUrl);
+      showPopup("복사 완료", "요청 URL이 클립보드에 복사되었습니다.");
+    }catch(e){
+      showPopup("복사 실패", lastRequestUrl);
+    }
+  });
 
   function apiJsonp(params, timeoutMs = 15000){
     return new Promise((resolve, reject) => {
@@ -131,6 +147,7 @@
 
       const url = new URL(SCRIPT_URL);
       Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+      lastRequestUrl = url.toString();
 
       const script = document.createElement("script");
       let done = false;
@@ -172,19 +189,19 @@
 
   function renderRoster(roster){
     const list = (roster || []).map(x=> String(x.name||'').trim()).filter(Boolean);
-    const html = `
+    document.getElementById("rosterBox").innerHTML = `
       <div><b>등록자</b> (${list.length}명)</div>
       <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
         ${list.map(n=>`<span class="pill">${n}</span>`).join("") || "<span class='hint'>-</span>"}
       </div>
     `;
-    document.getElementById("rosterBox").innerHTML = html;
   }
 
   function renderEntries(rows){
     const body = document.getElementById("entriesBody");
     if(!rows || !rows.length){
       body.innerHTML = `<tr><td colspan="9" class="hint">데이터 없음</td></tr>`;
+      allEntries = [];
       return;
     }
     rows.sort((a,b)=> (b.ts||0) - (a.ts||0));
@@ -223,6 +240,24 @@
     document.getElementById("statusHint").innerHTML = `활성 월: <b>${activeMonth}</b>`;
   }
 
+  async function diag(){
+    try{
+      const out = await apiJsonp({ action:"diag" });
+      if(!out.ok) return showPopup("진단 실패", out.error || "diag 실패", true);
+      const lines = [
+        `Spreadsheet: ${out.spreadsheetName}`,
+        `SpreadsheetId: ${out.spreadsheetId}`,
+        `활성 월: ${out.activeMonth}`,
+        `entries: ${out.entries ? (out.entries.name + ` (lastRow=${out.entries.lastRow})`) : "없음"}`,
+        `DB: ${out.db ? (out.db.name + ` (lastRow=${out.db.lastRow})`) : "없음"}`,
+        `탭 목록: ${Array.isArray(out.sheets) ? out.sheets.join(", ") : "-"}`
+      ];
+      showPopup("진단 결과", lines.join("\n"), true);
+    }catch(e){
+      showPopup("진단 실패", "네트워크/URL 문제일 수 있습니다.", true);
+    }
+  }
+
   async function loadAll(){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
@@ -234,14 +269,14 @@
         apiJsonp({ action:"adminEntries", pass, limit:"900", nameFilter:"" })
       ]);
 
-      if(!roster.ok) return showPopup("오류", roster.error || "roster 실패");
-      if(!entries.ok) return showPopup("오류", entries.error || "entries 실패");
+      if(!roster.ok) return showPopup("오류", roster.error || "roster 실패", true);
+      if(!entries.ok) return showPopup("오류", entries.error || "entries 실패", true);
 
       renderRoster(roster.roster);
       renderEntries(entries.rows || []);
       showPopup("완료", "관리자 데이터 불러오기 완료");
     }catch(e){
-      showPopup("오류", String(e && e.message ? e.message : e));
+      showPopup("오류", String(e && e.message ? e.message : e), true);
     }
   }
 
@@ -252,7 +287,7 @@
     if(!name) return showPopup("확인", "이름을 입력해 주세요.");
 
     const out = await apiJsonp({ action:"addParticipant", pass, name });
-    if(!out.ok) return showPopup("오류", out.error || "등록 실패");
+    if(!out.ok) return showPopup("오류", out.error || "등록 실패", true);
     await loadAll();
   }
 
@@ -264,7 +299,7 @@
     if(!confirm(`DB(A열)에서 삭제할까요?\n이름: ${name}`)) return;
 
     const out = await apiJsonp({ action:"removeParticipant", pass, name });
-    if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
+    if(!out.ok) return showPopup("오류", out.error || "삭제 실패", true);
     await loadAll();
   }
 
@@ -278,9 +313,9 @@
 
     showPopup("진행중", "기록 추가 중...");
     const out = await apiJsonp({ action:"addEntry", pass, name, distance: km, counted });
-    if(!out.ok) return showPopup("오류", out.error || "추가 실패");
+    if(!out.ok) return showPopup("오류", out.error || "추가 실패", true);
 
-    showPopup("완료", `기록 추가 완료\n(정합성 보장을 위해 재계산이 실행되었습니다)\n집계 인원: ${out.count}`);
+    showPopup("완료", `기록 추가 완료\n(재계산 완료: 집계 인원 ${out.count})`);
     await loadAll();
   }
 
@@ -291,7 +326,7 @@
 
     showPopup("진행중", "재계산 중...");
     const out = await apiJsonp({ action:"rebuildCache", pass });
-    if(!out.ok) return showPopup("오류", out.error || "rebuildCache 실패");
+    if(!out.ok) return showPopup("오류", out.error || "rebuildCache 실패", true);
 
     showPopup("완료", `재계산 완료\n월: ${out.monthKey}\n집계 인원: ${out.count}명`);
     await loadAll();
@@ -300,11 +335,11 @@
   async function monthlyReset(){
     const pass = passValue();
     if(!pass) return showPopup("확인", "관리자 비밀번호(pass)를 입력해 주세요.");
-    if(!confirm("월간 리셋을 실행할까요?\n- entries를 entries_YYYY-MM로 복사(없으면 생성)\n- entries는 초기화(헤더만)\n- 활성월을 다음달로 변경\n\n※ 사용하지 않으셔도 됩니다.")) return;
+    if(!confirm("월간 리셋을 실행할까요?\n- entries를 entries_YYYY-MM로 복사(없으면 생성)\n- entries는 초기화(헤더만)\n- 활성월을 다음달로 변경")) return;
 
     showPopup("진행중", "월간 리셋 실행 중...");
     const out = await apiJsonp({ action:"monthlyReset", pass });
-    if(!out.ok) return showPopup("오류", out.error || "monthlyReset 실패");
+    if(!out.ok) return showPopup("오류", out.error || "monthlyReset 실패", true);
 
     showPopup("완료", `아카이브: ${out.archivedMonth}\n새 활성 월: ${out.newActiveMonth}`);
     await loadAll();
@@ -318,9 +353,9 @@
 
     showPopup("진행중", "수정 중...");
     const out = await apiJsonp({ action:"editEntry", pass, ts:String(ts), distance: nd });
-    if(!out.ok) return showPopup("오류", out.error || "수정 실패");
+    if(!out.ok) return showPopup("오류", out.error || "수정 실패", true);
 
-    showPopup("완료", `수정 완료\n재계산 집계 인원: ${out.count}`);
+    showPopup("완료", `수정 완료\n(재계산 집계 인원 ${out.count})`);
     await loadAll();
   };
 
@@ -331,13 +366,14 @@
 
     showPopup("진행중", "삭제 중...");
     const out = await apiJsonp({ action:"deleteEntry", pass, ts:String(ts) });
-    if(!out.ok) return showPopup("오류", out.error || "삭제 실패");
+    if(!out.ok) return showPopup("오류", out.error || "삭제 실패", true);
 
-    showPopup("완료", `삭제 완료\n재계산 집계 인원: ${out.count}`);
+    showPopup("완료", `삭제 완료\n(재계산 집계 인원 ${out.count})`);
     await loadAll();
   };
 
   document.getElementById("btnLoad").addEventListener("click", loadAll);
+  document.getElementById("btnDiag").addEventListener("click", diag);
   document.getElementById("btnRebuild").addEventListener("click", rebuildCache);
   document.getElementById("btnMonthlyReset").addEventListener("click", monthlyReset);
 
