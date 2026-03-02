@@ -2,41 +2,37 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>RNLC 개인전</title>
   <style>
     :root{ --b:#111; --muted:#666; --card:#fcfcfc; --line:#eee; --radius:16px; }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#fff; color:#111; }
     .wrap{ width:min(820px, 92vw); margin:0 auto; padding:18px 0 44px; }
-    h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:34px; letter-spacing:0.02em; }
-    .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+    h1{ margin:14px 0 18px; text-align:center; font-weight:900; font-size:34px; }
+    .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
     .cardPad{ padding:16px; }
     .row{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
     label{ display:block; font-weight:800; font-size:13px; margin:0 0 6px; color:var(--muted); }
-    input{ width:100%; border:1px solid var(--line); border-radius:12px; padding:12px 12px; font-size:16px; outline:none; background:#fff; }
+    input{ width:100%; border:1px solid var(--line); border-radius:12px; padding:12px; font-size:16px; outline:none; background:#fff; }
     .field{ flex:1; min-width:220px; }
     .btn{ border:none; border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; font-size:15px; background:#111; color:#fff; min-width:120px; }
     .btnSecondary{ background:#f3f3f3; color:#111; }
     .btn:disabled{ opacity:0.55; cursor:not-allowed; }
     .hint{ color:var(--muted); font-size:13px; white-space:pre-line; }
-    .pill{ display:inline-block; padding:3px 8px; border-radius:999px; background:#f1f1f1; font-size:12px; font-weight:800; margin-left:6px; vertical-align:middle; }
-    .pillDark{ background:#111; color:#fff; }
-    .pillWarn{ background:#ffe9c7; color:#6a3e00; }
     .section{ margin-top:14px; border-top:1px solid var(--line); padding-top:14px; }
-    .sectionHead{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin:0 0 10px; }
-    .sectionHead h2{ margin:0; font-size:18px; font-weight:900; }
     .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     @media(max-width:520px){ .grid2{ grid-template-columns:1fr; } }
     .miniCard{ border:1px solid var(--line); border-radius:14px; padding:12px; background:var(--card); }
     .big{ font-size:22px; font-weight:900; margin-top:6px; }
-    .mono{ font-variant-numeric:tabular-nums; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .mono{ font-variant-numeric:tabular-nums; font-family:ui-monospace, Menlo, monospace; }
     .rankList{ border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; }
     .rankRow{ display:grid; grid-template-columns:40px 1fr 140px; gap:10px; align-items:center; padding:10px 12px; border-top:1px solid var(--line); font-size:15px; }
     .rankRow:first-child{ border-top:none; }
     .right{ text-align:right; }
-    .tabBar{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--card); margin-top:4px; }
-    .tabBtn{ flex:1; height:46px; border:2px solid var(--b); border-radius:12px; background:#fff; font-weight:1000; cursor:pointer; font-size:14px; }
+    canvas{ width:100%; height:160px; display:block; }
+    .tabBar{ display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--card); }
+    .tabBtn{ flex:1; height:46px; border:2px solid var(--b); border-radius:12px; background:#fff; font-weight:1000; cursor:pointer; }
     .tabBtn.active{ background:#111; color:#fff; }
     .tabPanel{ display:none; margin-top:10px; }
     .tabPanel.active{ display:block; }
@@ -45,7 +41,6 @@
     .filterBtn.active{ border-color:#111; background:#111; color:#fff; }
     .bottomBar{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:14px; }
     .adminBtn{ text-decoration:none; font-weight:900; font-size:13px; color:#111; border:1px solid var(--line); border-radius:999px; padding:8px 10px; background:#fff; }
-    canvas{ width:100%; height:160px; display:block; }
     .toastMask{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; padding:14px; }
     .toast{ background:#fff; border-radius:18px; width:min(440px, 92vw); padding:16px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.14); }
     .toastTitle{ font-weight:900; font-size:18px; margin:0 0 8px; }
@@ -54,140 +49,118 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>RNLC 개인전</h1>
+<div class="wrap">
+  <h1>RNLC 개인전</h1>
 
-    <div class="card">
-      <div class="cardPad">
+  <div class="card">
+    <div class="cardPad">
+      <div class="row">
+        <div class="field">
+          <label>이름 (사전등록자만 가능)</label>
+          <input id="name" placeholder="예) 홍길동"/>
+          <div class="hint" id="nameHint" style="margin-top:6px;">이름 입력 후 [확인]을 눌러 주세요.</div>
+        </div>
+        <button class="btn btnSecondary" id="checkBtn">확인</button>
+      </div>
 
-        <div class="row">
-          <div class="field">
-            <label>이름 (사전등록자만 가능)</label>
-            <input id="name" placeholder="예) 홍길동"/>
-            <div class="hint" id="nameHint" style="margin-top:6px;">이름 입력 후 [확인]을 눌러 주세요.</div>
-          </div>
-          <button class="btn btnSecondary" id="checkBtn">확인</button>
+      <div style="height:10px"></div>
+
+      <div class="row">
+        <div class="field">
+          <label>거리(km)</label>
+          <input id="distance" placeholder="예) 5.2"/>
+          <div class="hint" style="margin-top:6px;">※ 월 누계는 <b>개인당 200km까지</b> 반영됩니다.</div>
+        </div>
+        <button class="btn" id="submitBtn">입력 완료</button>
+      </div>
+
+      <div class="section">
+        <div class="row" style="justify-content:space-between; align-items:baseline;">
+          <div style="font-weight:900;font-size:18px;">누계 현황</div>
+          <div class="hint" id="sumHint">불러오는 중...</div>
         </div>
 
-        <div style="height:10px"></div>
-
-        <div class="row">
-          <div class="field">
-            <label>거리(km)</label>
-            <input id="distance" placeholder="예) 5.2"/>
-            <div class="hint" style="margin-top:6px;">※ 월 누계는 <b>개인당 200km까지</b> 반영됩니다.</div>
-          </div>
-          <button class="btn" id="submitBtn">입력 완료</button>
-        </div>
-
-        <div class="section">
-          <div class="sectionHead">
-            <h2>누계 현황</h2>
-            <div class="hint" id="sumHint">불러오는 중...</div>
-          </div>
-
-          <div class="grid2">
-            <div class="miniCard">
-              <div class="hint">내 누계</div>
-              <div class="big mono" id="myTotal">-</div>
-            </div>
-            <div class="miniCard">
-              <div class="hint">내 순위</div>
-              <div class="big mono" id="myRank">-</div>
-            </div>
-            <div class="miniCard">
-              <div class="hint">현재 1위 기록</div>
-              <div class="big mono" id="bestTotal">-</div>
-            </div>
-            <div class="miniCard">
-              <div class="hint">상위 3명</div>
-              <div class="big" id="top3Line">-</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="sectionHead">
-            <h2>내 누계 그래프</h2>
-            <div class="hint" id="chartHint">-</div>
+        <div class="grid2" style="margin-top:10px;">
+          <div class="miniCard">
+            <div class="hint">내 누계</div>
+            <div class="big mono" id="myTotal">-</div>
           </div>
           <div class="miniCard">
-            <canvas id="chart"></canvas>
+            <div class="hint">내 순위</div>
+            <div class="big mono" id="myRank">-</div>
+          </div>
+          <div class="miniCard">
+            <div class="hint">현재 1위 기록</div>
+            <div class="big mono" id="bestTotal">-</div>
+          </div>
+          <div class="miniCard">
+            <div class="hint">상위 3명</div>
+            <div class="big" id="top3Line">-</div>
           </div>
         </div>
+      </div>
 
-        <div class="section">
-          <div class="tabBar" role="tablist">
-            <button class="tabBtn active" id="tabTop10" type="button">개인 TOP10</button>
-            <button class="tabBtn" id="tabRecent" type="button">최근 인증기록</button>
-          </div>
+      <div class="section">
+        <div class="row" style="justify-content:space-between; align-items:baseline;">
+          <div style="font-weight:900;font-size:18px;">내 누계 그래프</div>
+          <div class="hint" id="chartHint">-</div>
+        </div>
+        <div class="miniCard" style="margin-top:10px;">
+          <canvas id="chart"></canvas>
+        </div>
+      </div>
 
-          <div class="tabPanel active" id="panelTop10">
-            <div class="rankList" id="top10Box"></div>
-          </div>
-
-          <div class="tabPanel" id="panelRecent">
-            <div class="filterRow">
-              <button class="filterBtn" id="fMyName" type="button">내 이름만</button>
-              <button class="filterBtn" id="fToday" type="button">오늘만</button>
-              <button class="filterBtn" id="fReset" type="button">전체</button>
-            </div>
-            <div class="rankList" id="recentBox"></div>
-          </div>
+      <div class="section">
+        <div class="tabBar">
+          <button class="tabBtn active" id="tabTop10" type="button">개인 TOP10</button>
+          <button class="tabBtn" id="tabRecent" type="button">최근 인증기록</button>
         </div>
 
-        <div class="bottomBar">
-          <div class="hint" id="modeHint">-</div>
-          <a class="adminBtn" href="./admin.html">관리자</a>
+        <div class="tabPanel active" id="panelTop10">
+          <div style="height:10px"></div>
+          <div class="rankList" id="top10Box"></div>
         </div>
 
+        <div class="tabPanel" id="panelRecent">
+          <div style="height:10px"></div>
+          <div class="filterRow">
+            <button class="filterBtn" id="fMyName" type="button">내 이름만</button>
+            <button class="filterBtn" id="fToday" type="button">오늘만</button>
+            <button class="filterBtn" id="fReset" type="button">전체</button>
+          </div>
+          <div class="rankList" id="recentBox"></div>
+        </div>
+      </div>
+
+      <div class="bottomBar">
+        <div class="hint" id="modeHint">-</div>
+        <a class="adminBtn" href="./admin.html">관리자</a>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="toastMask" id="toastMask">
-    <div class="toast">
-      <div class="toastTitle" id="toastTitle">완료</div>
-      <div class="toastBody" id="toastBody"></div>
-      <div class="toastBtnRow">
-        <button class="btn btnSecondary" id="toastBtn">닫기</button>
-      </div>
+<div class="toastMask" id="toastMask">
+  <div class="toast">
+    <div class="toastTitle" id="toastTitle">완료</div>
+    <div class="toastBody" id="toastBody"></div>
+    <div class="toastBtnRow">
+      <button class="btn btnSecondary" id="toastBtn">닫기</button>
     </div>
   </div>
+</div>
 
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWKsaTaqK5dtACbEbLQsEOB9EyTKfsIL3pplpjxt03buRW5wJ8ZylrvESr0mbC4q52/exec";
   const COOLDOWN_SECONDS = 60;
 
-  let activeMonth = null;
-  let recentRows = [];
-  const recentFilter = { myName:false, today:false };
-
-  let submitLockUntil = 0;
-  let submitTimer = null;
-
-  function parseKm(v){
-    const n = Number(String(v||"").trim().replace(",", "."));
-    return Number.isFinite(n) ? n : NaN;
-  }
-  function fmtKm(n){
-    const x = Math.round((Number(n)+Number.EPSILON)*100)/100;
-    return x.toLocaleString("ko-KR",{maximumFractionDigits:2}) + " km";
-  }
-  function escapeHtml(s){
-    return String(s||"")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-  }
-
-  function showPopup(title, body){
-    document.getElementById("toastTitle").textContent = title || "안내";
-    document.getElementById("toastBody").textContent = body || "";
-    document.getElementById("toastMask").style.display = "flex";
-  }
-  function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
-  document.getElementById("toastBtn").addEventListener("click", hidePopup);
-  document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
+  const state = {
+    activeMonth: null,
+    recent: [],
+    filters: { myName:false, today:false },
+    lockUntil: 0,
+    timer: null
+  };
 
   function apiJsonp(params, timeoutMs = 12000){
     return new Promise((resolve, reject) => {
@@ -233,40 +206,52 @@
     });
   }
 
-  function lockSubmitButton(seconds){
-    const btn = document.getElementById("submitBtn");
-    const baseText = "입력 완료";
-    submitLockUntil = Date.now() + seconds*1000;
-    btn.disabled = true;
-
-    clearInterval(submitTimer);
-    submitTimer = setInterval(()=>{
-      const left = Math.ceil((submitLockUntil - Date.now())/1000);
-      if(left <= 0){
-        clearInterval(submitTimer);
-        btn.disabled = false;
-        btn.textContent = baseText;
-        return;
-      }
-      btn.textContent = `${baseText} (${left}s)`;
-    }, 250);
+  function showPopup(title, body){
+    document.getElementById("toastTitle").textContent = title || "안내";
+    document.getElementById("toastBody").textContent = body || "";
+    document.getElementById("toastMask").style.display = "flex";
   }
-  function unlockSubmitButton(){
-    submitLockUntil = 0;
-    clearInterval(submitTimer);
-    const btn = document.getElementById("submitBtn");
-    btn.disabled = false;
-    btn.textContent = "입력 완료";
-  }
+  function hidePopup(){ document.getElementById("toastMask").style.display = "none"; }
+  document.getElementById("toastBtn").addEventListener("click", hidePopup);
+  document.getElementById("toastMask").addEventListener("click", (e)=>{ if(e.target.id==="toastMask") hidePopup(); });
 
+  function parseKm(v){
+    const n = Number(String(v||"").trim().replace(",", "."));
+    return Number.isFinite(n) ? n : NaN;
+  }
+  function fmtKm(n){
+    const x = Math.round((Number(n)+Number.EPSILON)*100)/100;
+    return x.toLocaleString("ko-KR",{maximumFractionDigits:2}) + " km";
+  }
   function ymdLocal(d){
     const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), dd=String(d.getDate()).padStart(2,"0");
     return `${y}-${m}-${dd}`;
   }
 
-  function syncFilterButtons(){
-    document.getElementById("fMyName").classList.toggle("active", recentFilter.myName);
-    document.getElementById("fToday").classList.toggle("active", recentFilter.today);
+  function lockSubmit(seconds){
+    const btn = document.getElementById("submitBtn");
+    const base = "입력 완료";
+    state.lockUntil = Date.now() + seconds*1000;
+    btn.disabled = true;
+
+    clearInterval(state.timer);
+    state.timer = setInterval(()=>{
+      const left = Math.ceil((state.lockUntil - Date.now())/1000);
+      if(left <= 0){
+        clearInterval(state.timer);
+        btn.disabled = false;
+        btn.textContent = base;
+        return;
+      }
+      btn.textContent = `${base} (${left}s)`;
+    }, 250);
+  }
+  function unlockSubmit(){
+    state.lockUntil = 0;
+    clearInterval(state.timer);
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = false;
+    btn.textContent = "입력 완료";
   }
 
   function drawChart(series){
@@ -299,7 +284,6 @@
     const xAt = (i)=> series.length===1 ? (x0+x1)/2 : x0 + (x1-x0)*(i/(series.length-1));
     const yAt = (v)=> y0 - (y0-y1)*((v-minY)/(maxY-minY));
 
-    // line
     ctx.strokeStyle="#111";
     ctx.lineWidth=2*devicePixelRatio;
     ctx.beginPath();
@@ -309,25 +293,64 @@
     });
     ctx.stroke();
 
-    // ✅ 마지막 점 표시(1개 데이터도 보이게)
+    // ✅ 1개 데이터도 보이게 점 표시
     const last = series[series.length-1];
     const lx = xAt(series.length-1);
     const ly = yAt(last.total||0);
-    ctx.fillStyle = "#111";
+    ctx.fillStyle="#111";
     ctx.beginPath();
     ctx.arc(lx, ly, 3.5*devicePixelRatio, 0, Math.PI*2);
     ctx.fill();
   }
 
+  function setTab(tab){
+    const isTop = tab==="top10";
+    document.getElementById("tabTop10").classList.toggle("active", isTop);
+    document.getElementById("tabRecent").classList.toggle("active", !isTop);
+    document.getElementById("panelTop10").classList.toggle("active", isTop);
+    document.getElementById("panelRecent").classList.toggle("active", !isTop);
+    if(!isTop) renderRecent();
+  }
+
+  function syncFilterButtons(){
+    document.getElementById("fMyName").classList.toggle("active", state.filters.myName);
+    document.getElementById("fToday").classList.toggle("active", state.filters.today);
+  }
+
+  function renderRecent(){
+    const box = document.getElementById("recentBox");
+    const nameNow = document.getElementById("name").value.trim();
+    const todayStr = ymdLocal(new Date());
+
+    const filtered = state.recent.filter(r=>{
+      if(state.filters.myName && nameNow && r.name !== nameNow) return false;
+      if(state.filters.today){
+        if(String(r.counted||"").trim() !== todayStr) return false;
+      }
+      return true;
+    }).slice(0,10);
+
+    box.innerHTML = filtered.length
+      ? filtered.map(r=>{
+          const eff = (r.effectiveDistance==null) ? null : Number(r.effectiveDistance);
+          const dist = Number(r.distance)||0;
+          const rightText = (eff!=null && eff < dist) ? `${eff} / ${dist}` : `${dist}`;
+          return `
+            <div class="rankRow" style="grid-template-columns:140px 1fr 140px;">
+              <div class="mono">${String(r.data||"").slice(0,16)}</div>
+              <div>${r.name||""}</div>
+              <div class="right mono">${rightText}km</div>
+            </div>
+          `;
+      }).join("")
+      : `<div class="rankRow"><div class="mono">-</div><div>표시할 기록이 없습니다.</div><div class="right mono">-</div></div>`;
+  }
+
   async function loadStatus(){
-    try{
-      const out = await apiJsonp({ action:"status" });
-      if(!out.ok) return showPopup("오류", out.error || "status 실패");
-      activeMonth = out.activeMonth;
-      document.getElementById("modeHint").textContent = `활성 월: ${activeMonth} (관리자 운영)`;
-    }catch(e){
-      showPopup("오류", "상태 불러오기 실패(네트워크/URL).");
-    }
+    const out = await apiJsonp({ action:"status" });
+    if(!out.ok) throw new Error(out.error || "status 실패");
+    state.activeMonth = out.activeMonth;
+    document.getElementById("modeHint").textContent = `활성 월: ${state.activeMonth} (관리자 운영)`;
   }
 
   async function checkName(){
@@ -352,7 +375,7 @@
   }
 
   async function submit(){
-    if(Date.now() < submitLockUntil) return;
+    if(Date.now() < state.lockUntil) return;
 
     const name = document.getElementById("name").value.trim();
     const distRaw = document.getElementById("distance").value.trim();
@@ -361,69 +384,50 @@
     if(!name) return showPopup("확인", "이름을 입력해 주세요.");
     if(!Number.isFinite(km) || km<=0) return showPopup("확인", "거리(km)를 0보다 큰 숫자로 입력해 주세요.");
 
-    lockSubmitButton(COOLDOWN_SECONDS);
+    lockSubmit(COOLDOWN_SECONDS);
 
     try{
       const out = await apiJsonp({ action:"submit", name, distance: distRaw });
       if(!out.ok){
-        unlockSubmitButton();
+        unlockSubmit();
         if(String(out.error||"").includes("cooldown")){
           return showPopup("잠시만요", `중복 방지를 위해 ${COOLDOWN_SECONDS}초 간 재입력이 제한됩니다.`);
         }
-        if(String(out.error||"").includes("not registered")){
-          return showPopup("미등록", "사전등록자만 참가 가능합니다.\n관리자에게 등록 요청해 주세요.");
-        }
         return showPopup("오류", out.error || "저장 실패");
       }
-
-      let msg = `${out.data}\n${out.name}\n입력: ${out.distance}km`;
-      msg += `\n집계 반영: ${out.effectiveDistance}km`;
-      if(out.capped) msg += `\n※ 200km 초과분은 집계 제외(월 200km까지만 반영)`;
-      showPopup("완료", msg);
-
       document.getElementById("distance").value = "";
       await refreshAll();
     }catch(e){
-      unlockSubmitButton();
+      unlockSubmit();
       showPopup("오류", "저장 실패(네트워크/권한/URL).");
     }
   }
 
   async function refreshLeaderboard(){
-    const hint = document.getElementById("sumHint");
-    hint.textContent = "불러오는 중...";
+    const out = await apiJsonp({ action:"leaderboard" });
+    if(!out.ok) throw new Error(out.error || "leaderboard 실패");
 
-    try{
-      const out = await apiJsonp({ action:"leaderboard" });
-      if(!out.ok){
-        hint.textContent = "불러오기 실패";
-        return;
-      }
+    document.getElementById("bestTotal").textContent = out.best ? fmtKm(out.best.total) : "-";
+    const top3 = out.top3 || [];
+    document.getElementById("top3Line").textContent = top3.length
+      ? top3.map((p,i)=>`${i+1}위 ${p.name}(${p.total}km)`).join(" / ")
+      : "-";
 
-      document.getElementById("bestTotal").textContent = out.best ? fmtKm(out.best.total) : "-";
+    const top10 = out.top10 || [];
+    const box = document.getElementById("top10Box");
+    box.innerHTML = top10.length
+      ? top10.map((p,i)=>`
+        <div class="rankRow">
+          <div class="mono">${i+1}</div>
+          <div>${p.name}</div>
+          <div class="right mono">${fmtKm(p.total)}</div>
+        </div>
+      `).join("")
+      : `<div class="rankRow"><div class="mono">-</div><div>데이터 없음</div><div class="right mono">-</div></div>`;
 
-      const top3 = out.top3 || [];
-      document.getElementById("top3Line").innerHTML = top3.length
-        ? top3.map((p,i)=> `<span class="pill pillDark">${i+1}위 ${escapeHtml(p.name)} (${escapeHtml(fmtKm(p.total))})</span>`).join(" ")
-        : "-";
-
-      const top10 = out.top10 || [];
-      const box = document.getElementById("top10Box");
-      box.innerHTML = top10.length
-        ? top10.map((p,i)=> `
-          <div class="rankRow">
-            <div class="mono">${i+1}</div>
-            <div>${escapeHtml(p.name)}</div>
-            <div class="right mono">${fmtKm(p.total)}</div>
-          </div>
-        `).join("")
-        : `<div class="rankRow"><div class="mono">-</div><div>데이터 없음</div><div class="right mono">-</div></div>`;
-
-      const now = new Date();
-      hint.textContent = `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")} / ${out.monthKey}`;
-    }catch(e){
-      hint.textContent = "불러오기 실패";
-    }
+    const now = new Date();
+    document.getElementById("sumHint").textContent =
+      `업데이트 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")} / ${out.monthKey}`;
   }
 
   async function refreshMy(){
@@ -433,58 +437,17 @@
       document.getElementById("myRank").textContent="-";
       return;
     }
-    try{
-      const out = await apiJsonp({ action:"personTotal", name });
-      if(!out.ok) return;
-      document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
-      document.getElementById("myRank").textContent = out.rank ? `${out.rank}위` : "-";
-    }catch(e){}
+    const out = await apiJsonp({ action:"personTotal", name });
+    if(!out.ok) return;
+    document.getElementById("myTotal").textContent = fmtKm(out.total || 0);
+    document.getElementById("myRank").textContent = out.rank ? `${out.rank}위` : "-";
   }
 
   async function refreshRecent(){
-    const box = document.getElementById("recentBox");
-    try{
-      const out = await apiJsonp({ action:"recentEntries", limit:"200" });
-      if(!out.ok){
-        box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>불러오기 실패</div><div class="right mono">-</div></div>`;
-        return;
-      }
-      recentRows = out.rows || [];
-      renderRecent();
-    }catch(e){
-      box.innerHTML = `<div class="rankRow"><div class="mono">-</div><div>불러오기 실패</div><div class="right mono">-</div></div>`;
-    }
-  }
-
-  function renderRecent(){
-    const box = document.getElementById("recentBox");
-    const nameNow = document.getElementById("name").value.trim();
-    const todayStr = ymdLocal(new Date());
-
-    const filtered = recentRows.filter(r=>{
-      if(recentFilter.myName && nameNow && String(r.name||"") !== nameNow) return false;
-      if(recentFilter.today){
-        if(String(r.counted||"").trim() !== todayStr) return false;
-      }
-      return true;
-    }).slice(0,10);
-
-    box.innerHTML = filtered.length
-      ? filtered.map(r=>{
-          const eff = (r.effectiveDistance==null) ? null : Number(r.effectiveDistance);
-          const dist = Number(r.distance)||0;
-          const capped = (eff!=null && eff < dist);
-          const badge = capped ? `<span class="pill pillWarn">200 캡</span>` : "";
-          const rightText = (eff!=null && capped) ? `${eff} / ${dist}` : `${dist}`;
-          return `
-            <div class="rankRow" style="grid-template-columns:140px 1fr 140px;">
-              <div class="mono">${escapeHtml(String(r.data||"").slice(0,16))}</div>
-              <div>${escapeHtml(r.name||"")} ${badge}</div>
-              <div class="right mono">${escapeHtml(rightText)}km</div>
-            </div>
-          `;
-      }).join("")
-      : `<div class="rankRow"><div class="mono">-</div><div>표시할 기록이 없습니다.</div><div class="right mono">-</div></div>`;
+    const out = await apiJsonp({ action:"recentEntries", limit:"200" });
+    if(!out.ok) throw new Error(out.error || "recentEntries 실패");
+    state.recent = out.rows || [];
+    renderRecent();
   }
 
   async function refreshSeries(){
@@ -494,42 +457,33 @@
       document.getElementById("chartHint").textContent = "-";
       return;
     }
-    try{
-      const out = await apiJsonp({ action:"personDailySeries", name });
-      if(!out.ok){
-        drawChart([]);
-        document.getElementById("chartHint").textContent = "불러오기 실패";
-        return;
-      }
-      const series = (out.series || []).map(x=>({date:x.date, total:Number(x.total||0)}));
-      drawChart(series);
-      document.getElementById("chartHint").textContent = `${out.monthKey} / ${series.length}일 누적`;
-    }catch(e){
+    const out = await apiJsonp({ action:"personDailySeries", name });
+    if(!out.ok){
       drawChart([]);
       document.getElementById("chartHint").textContent = "불러오기 실패";
+      return;
     }
+    const series = (out.series||[]).map(x=>({date:x.date, total:Number(x.total||0)}));
+    drawChart(series);
+    document.getElementById("chartHint").textContent = `${out.monthKey} / ${series.length}일 누적`;
   }
 
   async function refreshAll(){
-    await Promise.all([refreshLeaderboard(), refreshMy(), refreshRecent(), refreshSeries()]);
-  }
-
-  function setTab(tab){
-    const isTop = (tab==="top10");
-    document.getElementById("tabTop10").classList.toggle("active", isTop);
-    document.getElementById("tabRecent").classList.toggle("active", !isTop);
-    document.getElementById("panelTop10").classList.toggle("active", isTop);
-    document.getElementById("panelRecent").classList.toggle("active", !isTop);
-    if(!isTop) renderRecent();
+    try{
+      await Promise.all([refreshLeaderboard(), refreshMy(), refreshRecent(), refreshSeries()]);
+    }catch(e){
+      // 화면은 유지, 힌트만 갱신
+      document.getElementById("sumHint").textContent = "불러오기 실패";
+    }
   }
 
   function init(){
     document.getElementById("tabTop10").addEventListener("click", ()=>setTab("top10"));
     document.getElementById("tabRecent").addEventListener("click", ()=>setTab("recent"));
 
-    document.getElementById("fMyName").addEventListener("click", ()=>{ recentFilter.myName=!recentFilter.myName; syncFilterButtons(); renderRecent(); });
-    document.getElementById("fToday").addEventListener("click", ()=>{ recentFilter.today=!recentFilter.today; syncFilterButtons(); renderRecent(); });
-    document.getElementById("fReset").addEventListener("click", ()=>{ recentFilter.myName=false; recentFilter.today=false; syncFilterButtons(); renderRecent(); });
+    document.getElementById("fMyName").addEventListener("click", ()=>{ state.filters.myName=!state.filters.myName; syncFilterButtons(); renderRecent(); });
+    document.getElementById("fToday").addEventListener("click", ()=>{ state.filters.today=!state.filters.today; syncFilterButtons(); renderRecent(); });
+    document.getElementById("fReset").addEventListener("click", ()=>{ state.filters.myName=false; state.filters.today=false; syncFilterButtons(); renderRecent(); });
     syncFilterButtons();
 
     document.getElementById("checkBtn").addEventListener("click", checkName);
@@ -542,9 +496,8 @@
       else if(id==="distance") submit();
     });
 
-    loadStatus().then(refreshAll);
+    loadStatus().then(refreshAll).catch(()=>showPopup("오류","상태 불러오기 실패(네트워크/URL)."));
   }
-
   init();
 </script>
 </body>
