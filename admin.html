@@ -225,7 +225,7 @@
       if(!st.ok) return showPopup("오류", st.error || "adminStatus 실패");
 
       document.getElementById("statusHint").innerHTML =
-        `활성 월: <b>${st.activeMonth}</b> / DB: <b>${st.rosterCount}</b>명`;
+        `활성 월: <b>${st.activeMonth}</b> / DB: <b>${st.dbCount}</b>명`;
 
       const [roster, entries] = await Promise.all([
         apiJsonp({ action:"roster", pass }),
@@ -358,3 +358,4 @@
 </script>
 </body>
 </html>
+
