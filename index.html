@@ -69,7 +69,7 @@
         <div class="field">
           <label>거리(km)</label>
           <input id="distance" placeholder="예) 5.2"/>
-          <div class="hint" style="margin-top:6px;">※ 월 누계는 <b>개인당 200km까지</b> 반영됩니다.</div>
+          <div class="hint" style="margin-top:6px;">※ 입력한 거리(km)는 월 누계에 그대로 반영됩니다.</div>
         </div>
         <button class="btn" id="submitBtn">입력 완료</button>
       </div>
@@ -264,7 +264,7 @@
     ctx.clearRect(0,0,w,h);
 
     const padL=38*devicePixelRatio, padR=10*devicePixelRatio, padT=10*devicePixelRatio, padB=22*devicePixelRatio;
-    const maxY = Math.max(200, ...series.map(p=>p.total||0), 1);
+    const maxY = Math.max(...series.map(p=>p.total||0), 1);
     const minY = 0;
 
     ctx.lineWidth=1*devicePixelRatio;
@@ -513,4 +513,5 @@
 </script>
 </body>
 </html>
+
 
